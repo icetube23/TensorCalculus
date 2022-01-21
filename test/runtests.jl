@@ -2,5 +2,8 @@ using TensorCalculus
 using Test
 
 @testset "TensorCalculus.jl" begin
-    # Write your tests here.
+    t1 = Tensor(rand(3, 3))
+    @test ndims(t1) == 2
+    t2 = Tensor(rand(3, 3, 3))
+    @test ndims(t2) == 3
 end
