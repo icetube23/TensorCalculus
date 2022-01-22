@@ -1,6 +1,5 @@
-using TensorCalculus
 using Test
 
-@testset "tensor.jl" begin
+@testset "Tensor" begin
     include("tensor.jl")
 end
