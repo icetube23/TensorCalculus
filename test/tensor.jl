@@ -1,7 +1,7 @@
 using TensorCalculus
 using Test
 
-@testset "Array-like properties" begin
+@testset "Properties" begin
     t1 = Tensor(rand(3, 3))
     @test size(t1) == (3, 3)
     @test ndims(t1) == 2
@@ -21,8 +21,28 @@ using Test
     @test eltype(t3) == Float32
 end
 
+@testset "Equality" begin
+    x = rand(2, 3, 3)
+    y = x
+    t1 = Tensor(x)
+    t2 = Tensor(y)
+    @test t1 == t2
+    @test t1 === t2
+
+    y = copy(x)
+    t1 = Tensor(x)
+    t2 = Tensor(y)
+    @test t1 == t2
+    @test t1 !== t2
+
+    y[1, 2, 3] = 4
+    t1 = Tensor(x)
+    t2 = Tensor(y)
+    @test t1 != t2
+    @test t1 !== t2
+end
+
 @testset "Indexing" begin
-    # TODO: update comparisons once tensor equality is implemented
     t = Tensor(rand(1, 2, 3, 3))
     @test axes(t) == (Base.OneTo(1), Base.OneTo(2), Base.OneTo(3), Base.OneTo(3))
     @test eachindex(t) == Base.OneTo(18)

@@ -19,6 +19,9 @@ Base.ndims(t::Tensor) = ndims(t.data)
 Base.length(t::Tensor) = length(t.data)
 Base.eltype(t::Tensor) = eltype(t.data)
 
+# Extent array equality to tensors
+Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
+
 # Allow indexing tensors like arrays
 function Base.getindex(t::Tensor, args...; kwargs...)
     @argcheck ndims(t) > 0 BoundsError(t)
@@ -31,9 +34,6 @@ Base.setindex!(t::Tensor, val::T, args...; kwargs...) where {T<:Number} = setind
 
 Base.axes(t::Tensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
 Base.eachindex(t::Tensor, args...; kwargs...) = eachindex(t.data, args...; kwargs...)
-
-# Extent array equality to tensors
-Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
 
 # Base.show overload examples
 # Base.show(io::IO, ::MIME"text/plain", m::MyType) = print(io, "Examplary instance of MyType\n", m.x, " ± ", m.y)
