@@ -77,38 +77,38 @@ end
     show(io, t1)
     @test String(take!(io)) == "Tensor{Int64, 0}(2)"
     show(io, "text/plain", t1)
-    @test String(take!(io)) == "scalar Tensor{Int64, 0}:\n\
-                                2"
+    @test String(take!(io)) == """scalar Tensor{Int64, 0}:\n\
+                                  2"""
 
     t2 = Tensor(Vector{Float64}(1:4))
     show(io, t2)
     @test String(take!(io)) == "Tensor{Float64, 1}([1.0, 2.0, 3.0, 4.0])"
     show(io, "text/plain", t2)
-    @test String(take!(io)) == "4-element Tensor{Float64, 1}:\n \
-                                 1.0\n \
-                                 2.0\n \
-                                 3.0\n \
-                                 4.0"
+    @test String(take!(io)) == """4-element Tensor{Float64, 1}:\n \
+                                   1.0\n \
+                                   2.0\n \
+                                   3.0\n \
+                                   4.0"""
     
     t3 = Tensor(reshape(Vector{Int32}(1:9), 3, 3))
     show(io, t3)
     @test String(take!(io)) == "Tensor{Int32, 2}(Int32[1 4 7; 2 5 8; 3 6 9])"
     show(io, "text/plain", t3)
-    @test String(take!(io)) == "3×3 Tensor{Int32, 2}:\n \
-                                 1  4  7\n \
-                                 2  5  8\n \
-                                 3  6  9"
+    @test String(take!(io)) == """3×3 Tensor{Int32, 2}:\n \
+                                   1  4  7\n \
+                                   2  5  8\n \
+                                   3  6  9"""
     
     t4 = Tensor(reshape(Vector{Float32}(1:8), 2, 2, 2))
     show(io, t4)
     @test String(take!(io)) == "Tensor{Float32, 3}([1.0 3.0; 2.0 4.0;;; 5.0 7.0; 6.0 8.0])"
     show(io, "text/plain", t4)
-    @test String(take!(io)) == "2×2×2 Tensor{Float32, 3}:\n\
-                                [:, :, 1] =\n \
-                                 1.0  3.0\n \
-                                 2.0  4.0\n\
-                                \n\
-                                [:, :, 2] =\n \
-                                 5.0  7.0\n \
-                                 6.0  8.0"
+    @test String(take!(io)) == """2×2×2 Tensor{Float32, 3}:\n\
+                                  [:, :, 1] =\n \
+                                   1.0  3.0\n \
+                                   2.0  4.0\n\
+                                  \n\
+                                  [:, :, 2] =\n \
+                                   5.0  7.0\n \
+                                   6.0  8.0"""
 end
