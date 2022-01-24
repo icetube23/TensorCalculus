@@ -35,6 +35,16 @@ Base.setindex!(t::Tensor, val::T, args...; kwargs...) where {T<:Number} = setind
 Base.axes(t::Tensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
 Base.eachindex(t::Tensor, args...; kwargs...) = eachindex(t.data, args...; kwargs...)
 
-# Base.show overload examples
-# Base.show(io::IO, ::MIME"text/plain", m::MyType) = print(io, "Examplary instance of MyType\n", m.x, " ± ", m.y)
-# Base.show(io::IO, m::MyType) = print(io, m.x, '(', m.y, ')')
+# Base.show overloads
+Base.show(io::IO, t::Tensor{T, 0}) where T = print(io, "$(typeof(t))($(t.data[1]))")
+function Base.show(io::IO, ::MIME"text/plain", t::Tensor)
+    dims = ndims(t)
+    shape = dims == 0 ? "scalar" :
+            dims == 1 ? "$(length(t))-element" : join(size(t), "×")
+    print(io, "$shape $(typeof(t)):\n")
+    tmp_io = IOBuffer()
+    show(tmp_io, "text/plain", t.data)
+    data_str = String(take!(tmp_io))
+    data_str = join(split(data_str, "\n")[2:end], "\n")
+    print(io, data_str)
+end
