@@ -24,7 +24,6 @@ Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
 # Extend array size manipulation methods to tensors
 Base.reshape(t::Tensor, args...; kwargs...) = Tensor(reshape(t.data, args...; kwargs...))
 Base.permutedims(t::Tensor, args...; kwargs...) = Tensor(permutedims(t.data, args...; kwargs...))
-Base.permutedims!(t::Tensor, args...; kwargs...) = permutedims!(t.data, args...; kwargs...)
 
 # Allow indexing tensors like arrays
 function Base.getindex(t::Tensor, args...; kwargs...)

@@ -43,7 +43,27 @@ end
 end
 
 @testset "Reshaping" begin
+    t1 = Tensor(Vector(1:9))
+    @test size(t1) == (9,)
 
+    # reshaping does not alter the original tensor
+    t2 = reshape(t1, 3, 3)
+    @test size(t1) == (9,)
+    @test size(t2) == (3, 3)
+    @test t2 == Tensor([1 4 7;
+                        2 5 8;
+                        3 6 9])
+
+    # permutedims also does not alter the original tensor
+    t3 = Tensor(rand(5, 4, 2))
+    @test size(t3) == (5, 4, 2)
+    t4 = permutedims(t3, (3, 1, 2))
+    @test size(t3) == (5, 4, 2)
+    @test size(t4) == (2, 5, 4)
+
+    @test t3 != t4
+    @test t3[:, :, 1] == t4[1, : , :]
+    @test t3[:, :, 2] == t4[2, : , :]
 end
 
 @testset "Indexing" begin
