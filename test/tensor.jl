@@ -108,7 +108,7 @@ end
 
     t2 = Tensor(Vector{Float64}(1:4))
     show(io, t2)
-    @test norm(String(take!(io))) == norm("Tensor{Float64, 1}([1.0, 2.0, 3.0, 4.0])")
+    @test norm(String(take!(io))) == norm("Tensor{Float64, 1}($(t2.data))")
     show(io, "text/plain", t2)
     @test norm(String(take!(io))) == norm(join(["4-element Tensor{Float64, 1}:"
                                                 " 1.0"
@@ -119,7 +119,7 @@ end
     
     t3 = Tensor(reshape(Vector{Int32}(1:9), 3, 3))
     show(io, t3)
-    @test norm(String(take!(io))) == norm("Tensor{Int32, 2}(Int32[1 4 7; 2 5 8; 3 6 9])")
+    @test norm(String(take!(io))) == norm("Tensor{Int32, 2}($(t3.data))")
     show(io, "text/plain", t3)
     @test norm(String(take!(io))) == norm(join(["3×3 Tensor{Int32, 2}:"
                                                 " 1  4  7"
@@ -129,7 +129,7 @@ end
     
     t4 = Tensor(reshape(Vector{Float32}(1:8), 2, 2, 2))
     show(io, t4)
-    @test norm(String(take!(io))) == norm("Tensor{Float32, 3}([1.0 3.0; 2.0 4.0;;; 5.0 7.0; 6.0 8.0])")
+    @test norm(String(take!(io))) == norm("Tensor{Float32, 3}($(t4.data))")
     show(io, "text/plain", t4)
     @test norm(String(take!(io))) == norm(join(["2×2×2 Tensor{Float32, 3}:"
                                                 "[:, :, 1] ="
