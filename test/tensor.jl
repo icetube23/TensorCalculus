@@ -75,44 +75,44 @@ end
 
     t1 = Tensor(2)
     show(io, t1)
-    @test String(take!(io)) == "Tensor{Int64, 0}(2)"
+    @test strip(String(take!(io))) == strip("Tensor{Int64, 0}(2)")
     show(io, "text/plain", t1)
-    @test String(take!(io)) == join(["scalar Tensor{Int64, 0}:"
-                                     "2"],
-                                    "\n")
+    @test strip(String(take!(io))) == strip(join(["scalar Tensor{Int64, 0}:"
+                                                  "2"],
+                                                  "\n"))
 
     t2 = Tensor(Vector{Float64}(1:4))
     show(io, t2)
-    @test String(take!(io)) == "Tensor{Float64, 1}([1.0, 2.0, 3.0, 4.0])"
+    @test strip(String(take!(io))) == strip("Tensor{Float64, 1}([1.0, 2.0, 3.0, 4.0])")
     show(io, "text/plain", t2)
-    @test String(take!(io)) == join(["4-element Tensor{Float64, 1}:"
-                                     " 1.0"
-                                     " 2.0"
-                                     " 3.0"
-                                     " 4.0"],
-                                    "\n")
+    @test strip(String(take!(io))) == strip(join(["4-element Tensor{Float64, 1}:"
+                                                  " 1.0"
+                                                  " 2.0"
+                                                  " 3.0"
+                                                  " 4.0"],
+                                                  "\n"))
     
     t3 = Tensor(reshape(Vector{Int32}(1:9), 3, 3))
     show(io, t3)
-    @test String(take!(io)) == "Tensor{Int32, 2}(Int32[1 4 7; 2 5 8; 3 6 9])"
+    @test strip(String(take!(io))) == strip("Tensor{Int32, 2}(Int32[1 4 7; 2 5 8; 3 6 9])")
     show(io, "text/plain", t3)
-    @test String(take!(io)) == join(["3×3 Tensor{Int32, 2}:"
-                                     " 1  4  7"
-                                     " 2  5  8"
-                                     " 3  6  9"],
-                                    "\n")
+    @test strip(String(take!(io))) == strip(join(["3×3 Tensor{Int32, 2}:"
+                                                  " 1  4  7"
+                                                  " 2  5  8"
+                                                  " 3  6  9"],
+                                                  "\n"))
     
     t4 = Tensor(reshape(Vector{Float32}(1:8), 2, 2, 2))
     show(io, t4)
-    @test String(take!(io)) == "Tensor{Float32, 3}([1.0 3.0; 2.0 4.0;;; 5.0 7.0; 6.0 8.0])"
+    @test strip(String(take!(io))) == strip("Tensor{Float32, 3}([1.0 3.0; 2.0 4.0;;; 5.0 7.0; 6.0 8.0])")
     show(io, "text/plain", t4)
-    @test String(take!(io)) == join(["2×2×2 Tensor{Float32, 3}:"
-                                     "[:, :, 1] ="
-                                     " 1.0  3.0"
-                                     " 2.0  4.0"
-                                     ""
-                                     "[:, :, 2] ="
-                                     " 5.0  7.0"
-                                     " 6.0  8.0"],
-                                    "\n")
+    @test strip(String(take!(io))) == strip(join(["2×2×2 Tensor{Float32, 3}:"
+                                                  "[:, :, 1] ="
+                                                  " 1.0  3.0"
+                                                  " 2.0  4.0"
+                                                  ""
+                                                  "[:, :, 2] ="
+                                                  " 5.0  7.0"
+                                                  " 6.0  8.0"],
+                                                  "\n"))
 end
