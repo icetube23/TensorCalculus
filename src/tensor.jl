@@ -9,9 +9,8 @@ struct Tensor{T<:Number, N}
     Tensor(val::T) where T = new{T, 0}(fill(val))
 end
 
-# TODO: Add reshape and permutedims methods
-# TODO: Add show methods
 # TODO: Customize tensor broadcasting
+# TODO: Add some informative comments to the tests
 
 # Extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
@@ -21,6 +20,11 @@ Base.eltype(t::Tensor) = eltype(t.data)
 
 # Extent array equality to tensors
 Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
+
+# Extend array size manipulation methods to tensors
+Base.reshape(t::Tensor, args...; kwargs...) = Tensor(reshape(t.data, args...; kwargs...))
+Base.permutedims(t::Tensor, args...; kwargs...) = Tensor(permutedims(t.data, args...; kwargs...))
+Base.permutedims!(t::Tensor, args...; kwargs...) = permutedims!(t.data, args...; kwargs...)
 
 # Allow indexing tensors like arrays
 function Base.getindex(t::Tensor, args...; kwargs...)

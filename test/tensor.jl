@@ -42,6 +42,10 @@ end
     @test t1 !== t2
 end
 
+@testset "Reshaping" begin
+
+end
+
 @testset "Indexing" begin
     t = Tensor(rand(1, 2, 3, 3))
     @test axes(t) == (Base.OneTo(1), Base.OneTo(2), Base.OneTo(3), Base.OneTo(3))
@@ -72,7 +76,7 @@ end
 
 @testset "Printing" begin
     io = IOBuffer()
-    norm(s) = filter(x -> x != " ", s)
+    norm(s) = filter(x -> x != ' ', s)
 
     t1 = Tensor(2)
     show(io, t1)
