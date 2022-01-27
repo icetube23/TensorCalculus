@@ -23,23 +23,47 @@ end
 
 @testset "Equality" begin
     x = rand(2, 3, 3)
-    y = x
     t1 = Tensor(x)
+
+    y = x
     t2 = Tensor(y)
-    @test t1 == t2
     @test t1 === t2
+    @test t1 == t2
+    @test t1 ≈ t2
 
     y = copy(x)
-    t1 = Tensor(x)
     t2 = Tensor(y)
-    @test t1 == t2
     @test t1 !== t2
+    @test t1 == t2
+    @test t1 ≈ t2
+
+    y[1, 2, 3] += 1e-10
+    t2 = Tensor(y)
+    @test t1 !== t2
+    @test t1 != t2
+    @test t1 ≈ t2
 
     y[1, 2, 3] = 4
-    t1 = Tensor(x)
     t2 = Tensor(y)
-    @test t1 != t2
     @test t1 !== t2
+    @test t1 != t2
+    @test !(t1 ≈ t2)
+end
+
+@testset "Types" begin
+    # rand puts out Float64 per default
+    t1 = Tensor(rand(3, 3))
+    @test eltype(t1) == Float64
+
+    t2 = Tensor{Float32}(t1)
+    @test eltype(t2) == Float32
+
+    t3 = convert(Tensor{Float16}, t1)
+    @test eltype(t3) == Float16
+
+    # like Base.convert throws an error when performing inexact conversions
+    @test_throws InexactError Tensor{Int64}(t1)
+    @test_throws InexactError convert(Tensor{Int64}, t1)
 end
 
 @testset "Reshaping" begin
@@ -116,7 +140,7 @@ end
                                                 " 3.0"
                                                 " 4.0"],
                                                 "\n"))
-    
+
     t3 = Tensor(reshape(Vector{Int32}(1:9), 3, 3))
     show(io, t3)
     @test norm(String(take!(io))) == norm("Tensor{Int32, 2}($(t3.data))")
@@ -126,7 +150,7 @@ end
                                                 " 2  5  8"
                                                 " 3  6  9"],
                                                 "\n"))
-    
+
     t4 = Tensor(reshape(Vector{Float32}(1:8), 2, 2, 2))
     show(io, t4)
     @test norm(String(take!(io))) == norm("Tensor{Float32, 3}($(t4.data))")

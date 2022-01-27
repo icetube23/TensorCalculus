@@ -12,18 +12,32 @@ end
 # TODO: Customize tensor broadcasting
 # TODO: Add some informative comments to the tests
 
+
 # Extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
 Base.ndims(t::Tensor) = ndims(t.data)
 Base.length(t::Tensor) = length(t.data)
 Base.eltype(t::Tensor) = eltype(t.data)
 
+
 # Extent array equality to tensors
 Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
+Base.isapprox(t1::Tensor, t2::Tensor, args...; kwargs...) = isapprox(t1.data, t2.data, args...; kwargs...)
+
+
+# Type conversions
+(::Type{Tensor{T}})(t::Tensor) where T = convert(Tensor{T}, t)
+Base.convert(::Type{Tensor{T}}, t::Tensor) where T = Tensor(convert(Array{T}, t.data))
+function Base.promote_rule(::Type{Tensor{T1}}, ::Type{Tensor{T2}}) where {T1, T2}
+    T = promote_type(T1, T2)
+    Tensor{T}
+end
+
 
 # Extend array size manipulation methods to tensors
 Base.reshape(t::Tensor, args...; kwargs...) = Tensor(reshape(t.data, args...; kwargs...))
 Base.permutedims(t::Tensor, args...; kwargs...) = Tensor(permutedims(t.data, args...; kwargs...))
+
 
 # Allow indexing tensors like arrays
 function Base.getindex(t::Tensor, args...; kwargs...)
@@ -37,6 +51,7 @@ Base.setindex!(t::Tensor, val::T, args...; kwargs...) where {T<:Number} = setind
 
 Base.axes(t::Tensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
 Base.eachindex(t::Tensor, args...; kwargs...) = eachindex(t.data, args...; kwargs...)
+
 
 # Base.show overloads
 Base.show(io::IO, t::Tensor{T, 0}) where T = print(io, "$(typeof(t))($(t.data[1]))")
