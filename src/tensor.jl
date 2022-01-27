@@ -28,10 +28,6 @@ Base.isapprox(t1::Tensor, t2::Tensor, args...; kwargs...) = isapprox(t1.data, t2
 # Type conversions
 (::Type{Tensor{T}})(t::Tensor) where T = convert(Tensor{T}, t)
 Base.convert(::Type{Tensor{T}}, t::Tensor) where T = Tensor(convert(Array{T}, t.data))
-function Base.promote_rule(::Type{Tensor{T1}}, ::Type{Tensor{T2}}) where {T1, T2}
-    T = promote_type(T1, T2)
-    Tensor{T}
-end
 
 
 # Extend array size manipulation methods to tensors
