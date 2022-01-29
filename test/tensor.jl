@@ -66,6 +66,15 @@ end
     # like Base.convert throws an error when performing inexact conversions
     @test_throws InexactError Tensor{Int64}(t1)
     @test_throws InexactError convert(Tensor{Int64}, t1)
+
+    # scalar tensors can be converted to the underlying scalar
+    t4 = Tensor(4)
+    @test convert(Int64, t4) == 4
+    @test Int64(t4) == 4
+
+    # not possible for non-scalar tensors
+    @test_throws MethodError convert(Float64, t1)
+    @test_throws MethodError Float64(t1)
 end
 
 @testset "Reshaping" begin
