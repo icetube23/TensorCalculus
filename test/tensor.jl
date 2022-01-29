@@ -127,7 +127,8 @@ end
 @testset "Printing" begin
     # test that tensors show methods work upon array show methods
     io = IOBuffer()
-    # for compatibility with Julia 1.0 which used slightly different
+    # for compatibility with Julia 1.0 which used slightly different; remove if
+    # compatibility with this version is no longer needed/supported
     norm(s) = filter(x -> x != ' ', s)
 
     t1 = Tensor(2)
@@ -161,9 +162,9 @@ end
 
     t4 = Tensor(reshape(Vector{Float32}(1:8), 2, 2, 2))
     show(io, t4)
-    @test String(take!(io)) == "Tensor{Float32, 3}($(t4.data))"
+    @test norm(String(take!(io))) == norm("Tensor{Float32, 3}($(t4.data))")
     show(io, "text/plain", t4)
-    @test String(take!(io)) == join(["2×2×2 Tensor{Float32, 3}:"
+    @test norm(String(take!(io))) == norm(join(["2×2×2 Tensor{Float32, 3}:"
                                                 "[:, :, 1] ="
                                                 " 1.0  3.0"
                                                 " 2.0  4.0"
@@ -171,7 +172,7 @@ end
                                                 "[:, :, 2] ="
                                                 " 5.0  7.0"
                                                 " 6.0  8.0"],
-                                                "\n")
+                                                "\n"))
 end
 
 """@testset "Broadcasting" begin
