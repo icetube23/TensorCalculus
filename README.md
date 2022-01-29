@@ -2,6 +2,7 @@
 
 [![Build Status](https://github.com/icetube23/TensorCalculus.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/icetube23/TensorCalculus.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/icetube23/TensorCalculus.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/icetube23/TensorCalculus.jl)
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
 TensorCalculus is a Julia package which provides a `Tensor` wrapper around native Julia arrays. It allows for many common algebraic tensor operations (e.g., summation, different tensor products). Additionally, TensorCalculus also supports tensor fields (i.e., tensor-valued functions of space) and well-known differential operations (e.g., gradients, divergence, rotation, etc.) from mathematics and physics.
 <p align="center">
