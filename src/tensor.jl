@@ -9,33 +9,30 @@ struct Tensor{T<:Number, N}
     Tensor(val::T) where T = new{T, 0}(fill(val))
 end
 
-# TODO: Customize tensor broadcasting
-# TODO: Add some informative comments to the tests
 
-
-# Extend array property methods to tensors
+# extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
 Base.ndims(t::Tensor) = ndims(t.data)
 Base.length(t::Tensor) = length(t.data)
 Base.eltype(t::Tensor) = eltype(t.data)
 
 
-# Extent array equality to tensors
+# extent array equality to tensors
 Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
 Base.isapprox(t1::Tensor, t2::Tensor, args...; kwargs...) = isapprox(t1.data, t2.data, args...; kwargs...)
 
 
-# Type conversions
+# type conversions
 (::Type{Tensor{T}})(t::Tensor) where T = convert(Tensor{T}, t)
 Base.convert(::Type{Tensor{T}}, t::Tensor) where T = Tensor(convert(Array{T}, t.data))
 
 
-# Extend array size manipulation methods to tensors
+# extend array size manipulation methods to tensors
 Base.reshape(t::Tensor, args...; kwargs...) = Tensor(reshape(t.data, args...; kwargs...))
 Base.permutedims(t::Tensor, args...; kwargs...) = Tensor(permutedims(t.data, args...; kwargs...))
 
 
-# Allow indexing tensors like arrays
+# allow indexing tensors like arrays
 function Base.getindex(t::Tensor, args...; kwargs...)
     @argcheck ndims(t) > 0 BoundsError(t)
     val = getindex(t.data, args...; kwargs...)
@@ -62,3 +59,11 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tensor)
     data_str = join(split(data_str, "\n")[2:end], "\n")
     print(io, data_str)
 end
+
+
+# extend broadcasting of arrays to tensors
+Base.broadcastable(t::Tensor) = t
+Base.BroadcastStyle(::Type{<:Tensor}) = Broadcast.Style{Tensor}()
+Base.BroadcastStyle(::Broadcast.Style{Tensor}, ::Broadcast.BroadcastStyle) = Broadcast.Style{Tensor}()
+Base.similar(bc::Broadcast.Broadcasted{Broadcast.Style{Tensor}}, ::Type{ElType}) where ElType = Tensor(similar(Array{ElType}, axes(bc)))
+Base.copyto!(t::Tensor, bc::Broadcast.Broadcasted) = Tensor(copyto!(t.data, bc))

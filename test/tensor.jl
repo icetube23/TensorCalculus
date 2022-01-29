@@ -2,6 +2,7 @@ using TensorCalculus
 using Test
 
 @testset "Properties" begin
+    # the expected base methods for arrays also work on tensors
     t1 = Tensor(rand(3, 3))
     @test size(t1) == (3, 3)
     @test ndims(t1) == 2
@@ -25,24 +26,28 @@ end
     x = rand(2, 3, 3)
     t1 = Tensor(x)
 
+    # t1 and t2 share their underlying data, thus t1 === t2
     y = x
     t2 = Tensor(y)
     @test t1 === t2
     @test t1 == t2
     @test t1 ≈ t2
 
+    # t1 and t2 don't share their data, but contain the same values
     y = copy(x)
     t2 = Tensor(y)
     @test t1 !== t2
     @test t1 == t2
     @test t1 ≈ t2
 
+    # t1 and t2 differ very slightly in one value
     y[1, 2, 3] += 1e-10
     t2 = Tensor(y)
     @test t1 !== t2
     @test t1 != t2
     @test t1 ≈ t2
 
+    # t1 and t2 differ in one value
     y[1, 2, 3] = 4
     t2 = Tensor(y)
     @test t1 !== t2
@@ -91,6 +96,7 @@ end
 end
 
 @testset "Indexing" begin
+    # indexing a tensor works like indexing the wrapped array
     t = Tensor(rand(1, 2, 3, 3))
     @test axes(t) == (Base.OneTo(1), Base.OneTo(2), Base.OneTo(3), Base.OneTo(3))
     @test eachindex(t) == Base.OneTo(18)
@@ -119,7 +125,9 @@ end
 end
 
 @testset "Printing" begin
+    # test that tensors show methods work upon array show methods
     io = IOBuffer()
+    # for compatibility with Julia 1.0 which used slightly different
     norm(s) = filter(x -> x != ' ', s)
 
     t1 = Tensor(2)
@@ -165,3 +173,37 @@ end
                                                 " 6.0  8.0"],
                                                 "\n"))
 end
+
+"""@testset "Broadcasting" begin
+    # test that tensor broadcasting behaves exactly like array broadcasting
+    a1 = reshape(Vector(1:9), 3, 3)
+    @test Tensor(a1) .^ 2 == Tensor(a1 .^ 2)
+
+    a2 = rand(3, 3, 3)
+    @test Tensor(a2) .< 0.5 == Tensor(a2 .< 0.5)
+
+    a3 = rand(3, 3, 3)
+    @test Tensor(a2) .< Tensor(a3) == Tensor(a2 .< a3)
+
+    a4 = randn(4, 2, 5, 3)
+    @test abs.(Tensor(a4)) == Tensor(abs.(a4))
+
+    # more complex broadcasting example taken from a blog post at
+    # https://julialang.org/blog/2018/05/extensible-broadcast-fusion/
+    a5 = [1, 2, 3]
+    a6 = [10 20 30 40]
+    a7 = 10
+
+    # test broadcasting behaviour of the expression (a5 .+ a6) ./ a7
+    @test (Tensor(a5) .+ a6) ./ a7 == Tensor((a5 .+ a6) ./ a7)
+    @test (a5 .+ Tensor(a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
+    @test (a5 .+ a6) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
+    @test (Tensor(a5 .+ a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
+
+    @test (Tensor(a5 .+ a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
+    @test (Tensor(a5) .+ a6) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
+    @test (a5 .+ Tensor(a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
+    @test (Tensor(a5) .+ Tensor(a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
+
+    @test (Tensor(a5) .+ Tensor(a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
+end"""
