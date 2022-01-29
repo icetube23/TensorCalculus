@@ -1,5 +1,3 @@
-using Base.Broadcast
-
 struct BroadcastTensor
     data::Array
     BroadcastTensor(t::Tensor) = new(t.data)
