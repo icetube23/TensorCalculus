@@ -26,8 +26,8 @@ Base.isapprox(t1::Tensor, t2::Tensor, args...; kwargs...) = isapprox(t1.data, t2
 # type conversions
 (::Type{Tensor{T}})(t::Tensor) where T = convert(Tensor{T}, t)
 Base.convert(::Type{Tensor{T}}, t::Tensor) where T = Tensor(convert(Array{T}, t.data))
-Base.convert(::Type{T}, t::Tensor{T, 0}) where T = t.data[1]
 (::Type{T})(t::Tensor{T, 0}) where T = t.data[1]
+Base.convert(::Type{T}, t::Tensor{T, 0}) where T = t.data[1]
 
 
 # extend array size manipulation methods to tensors

@@ -1,6 +1,12 @@
-struct BroadcastTensor
-    data::Array
-    BroadcastTensor(t::Tensor) = new(t.data)
+"""
+    BroadcastTensor{T, N} <: AbstractArray{T, N}
+
+An efficient broadcasting wrapper for `Tensor`.
+Sub-types `AbstractArray` to make use of existing broadcasting utilities.
+"""
+struct BroadcastTensor{T, N} <: AbstractArray{T, N}
+    data::Array{T, N}
+    BroadcastTensor(t::Tensor{T, N}) where {T, N} = new{T, N}(t.data)
 end
 
 # behaves like getindex(::Tensor, ...) but returns scalars instead of scalar tensors
@@ -15,8 +21,8 @@ Base.ndims(t::BroadcastTensor) = ndims(t.data)
 
 # define the broadcasting behaviour of tensors using BroadcastTensor
 Base.broadcastable(t::Tensor) = BroadcastTensor(t)
-Base.BroadcastStyle(::Type{<:Tensor}) = Broadcast.Style{Tensor}()
-Base.BroadcastStyle(::Type{<:BroadcastTensor}) = Broadcast.Style{Tensor}()
-Base.BroadcastStyle(::Broadcast.Style{Tensor}, ::Broadcast.BroadcastStyle) = Broadcast.Style{Tensor}()
-Base.similar(bc::Broadcast.Broadcasted{Broadcast.Style{Tensor}}, ::Type{ElType}) where ElType = Tensor(similar(Array{ElType}, axes(bc)))
+Base.BroadcastStyle(::Type{<:Tensor}) = Broadcast.ArrayStyle{BroadcastTensor}()
+Base.BroadcastStyle(::Type{<:BroadcastTensor}) = Broadcast.ArrayStyle{BroadcastTensor}()
+Base.BroadcastStyle(::Broadcast.Style{Tensor}, ::Broadcast.BroadcastStyle) = Broadcast.ArrayStyle{BroadcastTensor}()
+Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{BroadcastTensor}}, ::Type{ElType}) where ElType = Tensor(similar(Array{ElType}, axes(bc)))
 Base.copyto!(t::Tensor, bc::Broadcast.Broadcasted) = Tensor(copyto!(t.data, bc))
