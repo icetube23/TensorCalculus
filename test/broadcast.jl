@@ -34,23 +34,35 @@ end
 
 @testset "Explicit broadcasting" begin
     a1 = [1 2 3 4 5]
-    a2 = [1 3 5 7 9;
-          2 4 6 8 10]
+    a2 = [
+        1 3 5 7 9
+        2 4 6 8 10
+    ]
     t1 = Tensor(a1)
     t2 = Tensor(a2)
 
     # explicit broadcasting works as expected
-    @test broadcast(+, t1, a2) == Tensor([2 5 8 11 14;
-                                          3 6 9 12 15])
-    @test broadcast(+, a1, t2) == Tensor([2 5 8 11 14;
-                                          3 6 9 12 15])
-    @test broadcast(+, t1, t2) == Tensor([2 5 8 11 14;
-                                          3 6 9 12 15])
+    @test broadcast(+, t1, a2) == Tensor([
+        2 5 8 11 14
+        3 6 9 12 15
+    ])
+    @test broadcast(+, a1, t2) == Tensor([
+        2 5 8 11 14
+        3 6 9 12 15
+    ])
+    @test broadcast(+, t1, t2) == Tensor([
+        2 5 8 11 14
+        3 6 9 12 15
+    ])
 
     # explicit in-place broadcasting is also possible
-    @test t2 != Tensor([2 5 8 11 14;
-                        3 6 9 12 15])
+    @test t2 != Tensor([
+        2 5 8 11 14
+        3 6 9 12 15
+    ])
     broadcast!(+, t2, t1, t2)
-    @test t2 == Tensor([2 5 8 11 14;
-                        3 6 9 12 15])
+    @test t2 == Tensor([
+        2 5 8 11 14
+        3 6 9 12 15
+    ])
 end

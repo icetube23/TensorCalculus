@@ -90,9 +90,9 @@ end
     @test 3 \ Tensor(1.5) == Tensor(0.5)
     @test Tensor(5) \ Tensor(4) == Tensor(0.8)
 
-    @test Tensor(2) ^ 0.4 ≈ Tensor(1.3195079)
-    @test 3 ^ Tensor(1.5) ≈ Tensor(5.1961524)
-    @test Tensor(5) ^ Tensor(4) == Tensor(625)
+    @test Tensor(2)^0.4 ≈ Tensor(1.3195079)
+    @test 3^Tensor(1.5) ≈ Tensor(5.1961524)
+    @test Tensor(5)^Tensor(4) == Tensor(625)
 
     # floating point error
     @test Tensor(2) % 0.4 ≈ Tensor(0.399999999)
@@ -101,30 +101,44 @@ end
 end
 
 @testset "Non-scalar operations" begin
-    t1 = Tensor([1 2 3;
-                 4 5 6])
-    t2 = Tensor([1 0 1;
-                 0 1 0])
+    t1 = Tensor([
+        1 2 3
+        4 5 6
+    ])
+    t2 = Tensor([
+        1 0 1
+        0 1 0
+    ])
 
     # unary +, - operators
-    @test +t1 == Tensor([1 2 3;
-                         4 5 6])
-    @test -t1 == Tensor([-1 -2 -3;
-                         -4 -5 -6])
+    @test +t1 == Tensor([
+        1 2 3
+        4 5 6
+    ])
+    @test -t1 == Tensor([
+        -1 -2 -3
+        -4 -5 -6
+    ])
 
     # binary +, - operators
-    @test t1 + t2 == Tensor([2 2 4;
-                             4 6 6])
+    @test t1 + t2 == Tensor([
+        2 2 4
+        4 6 6
+    ])
     @test t1 + t2 == t2 + t1
 
-    @test t1 - t2 == Tensor([0 2 2;
-                             4 4 6])
+    @test t1 - t2 == Tensor([
+        0 2 2
+        4 4 6
+    ])
     @test t1 - t2 == -(t2 - t1)
 
     # size of tensors to be added or subtracted has to match or the methods will throw
-    t3 = Tensor([1 4;
-                 2 5;
-                 3 6])
+    t3 = Tensor([
+        1 4
+        2 5
+        3 6
+    ])
 
     @test_throws DimensionMismatch t1 + t3
     @test_throws DimensionMismatch t3 + t2
