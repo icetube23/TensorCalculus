@@ -1,6 +1,3 @@
-using TensorCalculus
-using Test
-
 @testset "Properties" begin
     # the expected base methods for arrays also work on tensors
     t1 = Tensor(rand(3, 3))
@@ -174,37 +171,3 @@ end
                                                 " 6.0  8.0"],
                                                 "\n"))
 end
-
-"""@testset "Broadcasting" begin
-    # test that tensor broadcasting behaves exactly like array broadcasting
-    a1 = reshape(Vector(1:9), 3, 3)
-    @test Tensor(a1) .^ 2 == Tensor(a1 .^ 2)
-
-    a2 = rand(3, 3, 3)
-    @test Tensor(a2) .< 0.5 == Tensor(a2 .< 0.5)
-
-    a3 = rand(3, 3, 3)
-    @test Tensor(a2) .< Tensor(a3) == Tensor(a2 .< a3)
-
-    a4 = randn(4, 2, 5, 3)
-    @test abs.(Tensor(a4)) == Tensor(abs.(a4))
-
-    # more complex broadcasting example taken from a blog post at
-    # https://julialang.org/blog/2018/05/extensible-broadcast-fusion/
-    a5 = [1, 2, 3]
-    a6 = [10 20 30 40]
-    a7 = 10
-
-    # test broadcasting behaviour of the expression (a5 .+ a6) ./ a7
-    @test (Tensor(a5) .+ a6) ./ a7 == Tensor((a5 .+ a6) ./ a7)
-    @test (a5 .+ Tensor(a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
-    @test (a5 .+ a6) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
-    @test (Tensor(a5 .+ a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
-
-    @test (Tensor(a5 .+ a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
-    @test (Tensor(a5) .+ a6) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
-    @test (a5 .+ Tensor(a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
-    @test (Tensor(a5) .+ Tensor(a6)) ./ a7 == Tensor((a5 .+ a6) ./ a7)
-
-    @test (Tensor(a5) .+ Tensor(a6)) ./ Tensor(a7) == Tensor((a5 .+ a6) ./ a7)
-end"""
