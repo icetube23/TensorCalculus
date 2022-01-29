@@ -9,4 +9,8 @@ using Test
     @testset "Broadcasting" begin
         include("broadcast.jl")
     end
+
+    @testset "Arithmetic" begin
+        include("arithmetic.jl")
+    end
 end
