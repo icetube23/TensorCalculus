@@ -13,12 +13,7 @@ makedocs(;
         canonical="https://icetube23.github.io/TensorCalculus.jl",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
-    ],
+    pages=["Home" => "index.md"],
 )
 
-deploydocs(;
-    repo="github.com/icetube23/TensorCalculus.jl",
-    devbranch="main",
-)
+deploydocs(; repo="github.com/icetube23/TensorCalculus.jl", devbranch="main")
