@@ -12,6 +12,7 @@ makedocs(;
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://icetube23.github.io/TensorCalculus.jl",
         assets=String[],
+        edit_link="main",
     ),
     pages=["Home" => "index.md"],
 )
