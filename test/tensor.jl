@@ -128,8 +128,19 @@ end
     t[1, 1, 1, :] = Tensor([1, 2, 3])
     @test t[1, 1, 1, :] == Tensor([1.0, 2.0, 3.0])
 
+    # tensor elements can be assigned scalars and scalar tensors
     t[1, 1, 1, 2] = 4
-    @test t[1, 1, 1, :] == Tensor([1.0, 4.0, 3.0])
+    t[1, 1, 1, 3] = Tensor(9)
+    @test t[1, 1, 1, :] == Tensor([1.0, 4.0, 9.0])
+
+    # throws BoundsError if indices are out-of-range
+    @test_throws BoundsError t[2, :, :, :]
+    @test_throws BoundsError t[1, 3, 3, 3] = 2
+
+    # checkbounds can also be used directly
+    @test checkbounds(Bool, t, 1, 1, 1, 1)
+    @test !checkbounds(Bool, t, 2, 1, 1, 1)
+    @test_throws BoundsError checkbounds(t, 2, 1, 1, 1)
 end
 
 @testset "Printing" begin

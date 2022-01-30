@@ -35,18 +35,32 @@ function Base.permutedims(t::Tensor, args...; kwargs...)
 end
 
 # allow indexing tensors like arrays
-function Base.getindex(t::Tensor, args...; kwargs...)
+function Base.getindex(t::Tensor, inds...)
     @argcheck ndims(t) > 0 BoundsError(t)
-    val = getindex(t.data, args...; kwargs...)
+    checkbounds(t, inds...)
+    val = getindex(t.data, inds...)
     return Tensor(typeof(val) <: AbstractArray ? val : fill(val))
 end
 
-function Base.setindex!(t::Tensor, val::Tensor, args...; kwargs...)
-    return setindex!(t.data, val.data, args...; kwargs...)
+function Base.setindex!(t1::Tensor, t2::Tensor, inds...)
+    checkbounds(t1, inds...)
+    val = ndims(t2) == 0 ? t2.data[1] : t2.data
+    return setindex!(t1.data, val, inds...)
 end
 
-function Base.setindex!(t::Tensor, val::S, args...; kwargs...) where {S<:Number}
-    return setindex!(t.data, val, args...; kwargs...)
+function Base.setindex!(t::Tensor, val::S, inds...) where {S<:Number}
+    checkbounds(t, inds...)
+    return setindex!(t.data, val, inds...)
+end
+
+function Base.checkbounds(::Type{Bool}, t::Tensor, inds...)
+    return checkbounds(Bool, t.data, inds...)
+end
+
+function Base.checkbounds(t::Tensor, inds...)
+    if !checkbounds(Bool, t::Tensor, inds...)
+        throw(BoundsError(t, inds))
+    end
 end
 
 Base.axes(t::Tensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
