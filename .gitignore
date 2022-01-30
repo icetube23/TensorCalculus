@@ -3,3 +3,6 @@
 *.jl.mem
 /Manifest.toml
 .JuliaFormatter.toml
+docs/build/
+docs/site/
+docs/Manifest.toml
