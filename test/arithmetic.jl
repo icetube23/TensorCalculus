@@ -145,3 +145,38 @@ end
     @test_throws DimensionMismatch t1 - t3
     @test_throws DimensionMismatch t3 - t2
 end
+
+@testset "Non-scalar-scalar arithmetic" begin
+    t1 = Tensor(rand(3, 3))
+    t2 = Tensor(2)
+    t3 = Tensor(-1.0f0)
+
+    # each tensor can be multiplied by a scalar (tensor) from both sides
+    @test t1 * t2 == t2 * t1 == 2 * t1 == t1 * 2 == Tensor(t1.data * 2)
+    @test t1 * t3 == t3 * t1 == -1.0f0 * t1 == t1 * -1.0f0 == Tensor(t1.data * -1.0f0)
+
+    # each tensor can be divided by a scalar (tensor)
+    @test t1 / t2 == t1 / 2 == Tensor(t1.data / 2)
+    @test t1 / t3 == t1 / -1.0f0 == Tensor(t1.data / -1.0f0)
+
+    # non-scalar tensors can not be divided by
+    @test_throws MethodError t2 / t1
+    @test_throws MethodError -1.0f0 / t1
+
+    # similar to Julia arrays only * and / are directly supported by tensors all other
+    # operations need to Broadcasted
+    @test_throws MethodError t1 ÷ t2
+    @test_throws MethodError t1 ÷ 2
+    @test_throws MethodError t1 \ t2
+    @test_throws MethodError t1 \ 2
+    @test_throws MethodError t1^t2
+    @test_throws MethodError t1^2
+    @test_throws MethodError t1 % t2
+    @test_throws MethodError t1 % 2
+
+    # this works
+    @test t1 .÷ t2 == t1 .÷ 2 == Tensor(t1.data .÷ 2)
+    @test t1 .\ t2 == t1 .\ 2 == Tensor(t1.data .\ 2)
+    @test t1 .^ t2 == t1 .^ 2 == Tensor(t1.data .^ 2)
+    @test t1 .% t2 == t1 .% 2 == Tensor(t1.data .% 2)
+end

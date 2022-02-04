@@ -10,6 +10,10 @@ struct Tensor{T<:Number,N}
     Tensor(val::T) where {T} = new{T,0}(fill(val))
 end
 
+# TODO: Implement Base.hash
+# TODO: Add proper documentation for Tensor
+# TODO: Implement item() function for scalar tensors?
+
 # extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
 Base.ndims(t::Tensor) = ndims(t.data)
@@ -68,6 +72,7 @@ Base.eachindex(t::Tensor, args...; kwargs...) = eachindex(t.data, args...; kwarg
 
 # Base.show overloads
 Base.show(io::IO, t::Tensor{T,0}) where {T} = print(io, "$(typeof(t))($(t.data[1]))")
+# TODO: Add ellipsis handling for large arrays
 function Base.show(io::IO, ::MIME"text/plain", t::Tensor)
     dims = ndims(t)
     shape = if dims == 0

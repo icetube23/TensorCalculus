@@ -47,3 +47,13 @@ function Base.:-(t1::Tensor, t2::Tensor)
     @argcheck size(t1) == size(t2) DimensionMismatch
     return Tensor(t1.data - t2.data)
 end
+
+# NOTE: Scalar tensors behaving like scalars for these operations might
+# be removed in future versions
+Base.:*(t::Tensor, val::S) where {S<:Number} = Tensor(t.data * val)
+Base.:*(val::S, t::Tensor) where {S<:Number} = Tensor(val * t.data)
+Base.:*(t1::Tensor, t2::Tensor{T,0}) where {T} = Tensor(t1.data * t2.data[1])
+Base.:*(t1::Tensor{T,0}, t2::Tensor) where {T} = Tensor(t1.data[1] * t2.data)
+
+Base.:/(t::Tensor, val::S) where {S<:Number} = Tensor(t.data / val)
+Base.:/(t1::Tensor, t2::Tensor{T,0}) where {T} = Tensor(t1.data / t2.data[1])
