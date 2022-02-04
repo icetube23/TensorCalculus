@@ -17,16 +17,11 @@ end
 
 # needed to allow broadcasting a BroadcastTensor
 Base.axes(t::BroadcastTensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
-#Base.ndims(t::BroadcastTensor) = ndims(t.data)
 
 # define the broadcasting behaviour of tensors using BroadcastTensor
 Base.broadcastable(t::Tensor) = BroadcastTensor(t)
 Base.BroadcastStyle(::Type{<:Tensor}) = Broadcast.ArrayStyle{BroadcastTensor}()
 Base.BroadcastStyle(::Type{<:BroadcastTensor}) = Broadcast.ArrayStyle{BroadcastTensor}()
-
-#function Base.BroadcastStyle(::Broadcast.Style{Tensor}, ::Broadcast.BroadcastStyle)
-#    return Broadcast.ArrayStyle{BroadcastTensor}()
-#end
 
 function Base.similar(
     bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{BroadcastTensor}}, ::Type{ElType}
