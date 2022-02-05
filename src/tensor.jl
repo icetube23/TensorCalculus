@@ -50,10 +50,10 @@ Base.convert(::Type{Tensor{T}}, t::Tensor) where {T} = Tensor(convert(Array{T}, 
 Base.convert(::Type{T}, t::Tensor{T,0}) where {T} = t.data[1]
 
 # extend array size manipulation methods to tensors
-Base.reshape(t::Tensor, args...; kwargs...) = Tensor(reshape(t.data, args...; kwargs...))
-function Base.permutedims(t::Tensor, args...; kwargs...)
-    return Tensor(permutedims(t.data, args...; kwargs...))
-end
+Base.reshape(t::Tensor, dims...) = Tensor(reshape(t.data, dims...))
+Base.permutedims(t::Tensor{T,1}) where {T} = Tensor(permutedims(t.data))
+Base.permutedims(t::Tensor{T,2}) where {T} = Tensor(permutedims(t.data))
+Base.permutedims(t::Tensor, perm) = Tensor(permutedims(t.data, perm))
 
 # allow indexing tensors like arrays
 function Base.getindex(t::Tensor, inds...)

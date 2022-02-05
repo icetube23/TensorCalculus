@@ -101,6 +101,11 @@ end
     @test t3 != t4
     @test t3[:, :, 1] == t4[1, :, :]
     @test t3[:, :, 2] == t4[2, :, :]
+
+    # on 1- and 2-dimensional tensors the permutation tuple can be omitted
+    @test permutedims(Tensor([1, 2, 3])) == Tensor([1 2 3])
+    @test permutedims(Tensor([1 2 3])) == Tensor([1; 2; 3;;])
+    @test permutedims(Tensor([1 2 3; 4 5 6])) == Tensor([1 4; 2 5; 3 6])
 end
 
 @testset "Indexing" begin
