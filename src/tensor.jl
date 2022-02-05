@@ -89,3 +89,6 @@ function Base.show(io::IO, ::MIME"text/plain", t::Tensor)
     data_str = join(split(data_str, "\n")[2:end], "\n")
     return print(io, data_str)
 end
+
+# tensor hash should be slightly different than the hash of the underlying data
+Base.hash(t::Tensor) = hash(hash(t.data) + hash("t"))

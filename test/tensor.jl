@@ -211,3 +211,15 @@ end
         ),
     )
 end
+
+@testset "Hashing" begin
+    t = Tensor(rand(3, 3))
+
+    # tensors are hashable and their hash is different than the hash of the underlying data
+    @test hash(t) != hash(t.data)
+    @test hash(t) == hash(hash(t.data) + hash("t"))
+
+    # tensors can be used in a dict
+    d = Dict(t => (3, 3))
+    @test d[t] == (3, 3)
+end
