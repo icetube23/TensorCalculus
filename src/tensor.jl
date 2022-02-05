@@ -84,8 +84,9 @@ function Base.checkbounds(t::Tensor, inds...)
     end
 end
 
-Base.axes(t::Tensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
-Base.eachindex(t::Tensor, args...; kwargs...) = eachindex(t.data, args...; kwargs...)
+Base.axes(t::Tensor, inds...) = axes(t.data, inds...)
+Base.eachindex(t::Tensor) = eachindex(t.data)
+Base.CartesianIndices(t::Tensor) = CartesianIndices(t.data)
 
 # Base.show overloads
 Base.show(io::IO, t::Tensor{T,0}) where {T} = print(io, "$(typeof(t))($(t.data[1]))")
