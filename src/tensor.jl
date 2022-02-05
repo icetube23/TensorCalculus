@@ -1,18 +1,35 @@
 using ArgCheck
 
 """
-Awesome `Tensor` data type!
+    Tensor{T<:Number,N}
+
+Wrapper type for native Julia arrays. Provides most of the standard array functionality and
+extends it by arithmetic and algebraic tensor operations.
+
+# Examples
+```jldoctest
+julia> t1 = Tensor([1 2; 3 4])
+2×2 Tensor{Int64, 2}:
+ 1  2
+ 3  4
+
+julia> t2 = Tensor(3.14)
+scalar Tensor{Float64, 0}:
+3.14
+
+julia> t1 * t2
+2×2 Tensor{Float64, 2}:
+ 3.14   6.28
+ 9.42  12.56
+```
 """
 struct Tensor{T<:Number,N}
-    data::Array{T,N}
-    Tensor(arr::Array{T,N}) where {T,N} = new{T,N}(arr)
-    Tensor(arr::BitArray{N}) where {N} = new{Bool,N}(Array{Bool}(arr))
+    data::AbstractArray{T,N}
+    Tensor(arr::AbstractArray{T,N}) where {T,N} = new{T,N}(arr)
     Tensor(val::T) where {T} = new{T,0}(fill(val))
 end
 
-# TODO: Implement Base.hash
-# TODO: Add proper documentation for Tensor
-# TODO: Implement item() function for scalar tensors?
+# TODO: Add tensor product examples to documentation once implemented
 
 # extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
