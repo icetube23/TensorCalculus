@@ -72,7 +72,7 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     for i in eachindex(res)
         # map indices of result array to appropriate indices for the factor arrays
         ind = Tuple(inds[i])
-        i1, i2 = ind[begin:(ndims(t1) - 1)], ind[ndims(t1):end]
+        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
 
         @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
     end
