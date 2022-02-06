@@ -4,19 +4,19 @@
     @test size(t1) == (3, 3)
     @test ndims(t1) == 2
     @test length(t1) == 9
-    @test eltype(t1) == Float64
+    @test eltype(t1) === Float64
 
     t2 = Tensor(rand(Int32, 3, 3, 3))
     @test size(t2) == (3, 3, 3)
     @test ndims(t2) == 3
     @test length(t2) == 27
-    @test eltype(t2) == Int32
+    @test eltype(t2) === Int32
 
     t3 = Tensor(3.0f0)
     @test size(t3) == ()
     @test ndims(t3) == 0
     @test length(t3) == 1
-    @test eltype(t3) == Float32
+    @test eltype(t3) === Float32
 end
 
 @testset "Equality" begin
@@ -55,13 +55,13 @@ end
 @testset "Types" begin
     # rand puts out Float64 per default
     t1 = Tensor(rand(3, 3))
-    @test eltype(t1) == Float64
+    @test eltype(t1) === Float64
 
     t2 = Tensor{Float32}(t1)
-    @test eltype(t2) == Float32
+    @test eltype(t2) === Float32
 
     t3 = convert(Tensor{Float16}, t1)
-    @test eltype(t3) == Float16
+    @test eltype(t3) === Float16
 
     # like Base.convert throws an error when performing inexact conversions
     @test_throws InexactError Tensor{Int64}(t1)
@@ -104,7 +104,7 @@ end
 
     # on 1- and 2-dimensional tensors the permutation tuple can be omitted
     @test permutedims(Tensor([1, 2, 3])) == Tensor([1 2 3])
-    @test permutedims(Tensor([1 2 3])) == Tensor([1; 2; 3;;])
+    @test permutedims(Tensor([1 2 3])) == Tensor([1; 2; 3])
     @test permutedims(Tensor([1 2 3; 4 5 6])) == Tensor([1 4; 2 5; 3 6])
 end
 

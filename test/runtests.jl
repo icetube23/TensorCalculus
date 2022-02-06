@@ -13,4 +13,8 @@ using Test
     @testset "Arithmetic" begin
         include("arithmetic.jl")
     end
+
+    @testset "Algebra" begin
+        include("algebra.jl")
+    end
 end
