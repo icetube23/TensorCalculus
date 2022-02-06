@@ -113,6 +113,7 @@ end
     t = Tensor(rand(1, 2, 3, 3))
     @test axes(t) == (Base.OneTo(1), Base.OneTo(2), Base.OneTo(3), Base.OneTo(3))
     @test eachindex(t) == Base.OneTo(18)
+    @test CartesianIndices(t) == CartesianIndices(axes(t))
 
     t1 = t[1, :, :, :]
     @test t1 isa Tensor{Float64,3}
