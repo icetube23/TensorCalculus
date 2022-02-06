@@ -13,14 +13,30 @@ julia> t1 = Tensor([1 2; 3 4])
  1  2
  3  4
 
-julia> t2 = Tensor(3.14)
-scalar Tensor{Float64, 0}:
-3.14
-
-julia> t1 * t2
+julia> 3.14 * t1
 2×2 Tensor{Float64, 2}:
  3.14   6.28
  9.42  12.56
+
+julia> t2 = Tensor(Float32[1.1, -2.2, 3.3])
+3-element Tensor{Float32, 1}:
+  1.1
+ -2.2
+  3.3
+
+julia> t1 ⊗ t2
+2×2×3 Tensor{Float32, 3}:
+[:, :, 1] =
+ 1.1  2.2
+ 3.3  4.4
+
+[:, :, 2] =
+ -2.2  -4.4
+ -6.6  -8.8
+
+[:, :, 3] =
+ 3.3   6.6
+ 9.9  13.2
 ```
 """
 struct Tensor{T<:Number,N}

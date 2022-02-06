@@ -15,7 +15,7 @@ makedocs(;
         edit_link="main",
     ),
     pages=["Home" => "index.md"],
-    strict=true,
+    strict=:doctest,
 )
 
 deploydocs(; repo="github.com/icetube23/TensorCalculus.jl", devbranch="main")
