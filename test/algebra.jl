@@ -29,9 +29,11 @@ end
     # for 1-dimensional tensors the inner product is equivalent to the vector dot product
     @test t1 ⋅ t2 == Tensor(0)
 
-    t3 = Tensor([1 -1 1;
-                 -1 1 -1;
-                 1 -1 1])
+    t3 = Tensor([
+        1 -1 1
+        -1 1 -1
+        1 -1 1
+    ])
     @test t1 ⋅ t3 == Tensor([2, -2, 2])
     @test t2 ⋅ t3 == Tensor([0, 0, 0])
 
