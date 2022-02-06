@@ -38,6 +38,9 @@ julia> t1 ⊗ t2
  3.3   6.6
  9.9  13.2
 ```
+
+julia> foo(t1)
+42
 """
 struct Tensor{T<:Number,N}
     data::AbstractArray{T,N}
