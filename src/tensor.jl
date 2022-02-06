@@ -35,7 +35,7 @@ julia> t1 ⊗ t2
  -6.6  -8.8
 
 [:, :, 3] =
- 3.3   6.5
+ 3.3   6.6
  9.9  13.2
 ```
 """
@@ -44,6 +44,8 @@ struct Tensor{T<:Number,N}
     Tensor(arr::AbstractArray{T,N}) where {T,N} = new{T,N}(arr)
     Tensor(val::T) where {T} = new{T,0}(fill(val))
 end
+
+foo(t::Tensor) = 42
 
 # TODO: Add tensor product examples to documentation once implemented
 
