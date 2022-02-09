@@ -38,22 +38,12 @@ julia> t1 ⊗ t2
  3.3   6.6
  9.9  13.2
 ```
-
-julia> foo(t1)
-10.0
 """
 struct Tensor{T<:Number,N}
     data::AbstractArray{T,N}
     Tensor(arr::AbstractArray{T,N}) where {T,N} = new{T,N}(arr)
     Tensor(val::T) where {T} = new{T,0}(fill(val))
 end
-
-@noinline function foo(t::Tensor)
-    nt = convert(Tensor{Float64}, t)
-    sum(nt.data)
-end
-
-# TODO: Add tensor product examples to documentation once implemented
 
 # extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
