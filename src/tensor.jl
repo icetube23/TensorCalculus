@@ -47,6 +47,7 @@ end
 
 # extend array property methods to tensors
 Base.size(t::Tensor) = size(t.data)
+Base.size(t::Tensor, dim::Integer) = size(t.data, dim)
 Base.ndims(t::Tensor) = ndims(t.data)
 Base.length(t::Tensor) = length(t.data)
 Base.eltype(t::Tensor) = eltype(t.data)
@@ -70,21 +71,21 @@ Base.permutedims(t::Tensor{T,2}) where {T} = Tensor(permutedims(t.data))
 Base.permutedims(t::Tensor, perm) = Tensor(permutedims(t.data, perm))
 
 # allow indexing tensors like arrays
-function Base.getindex(t::Tensor, inds...)
+@inline function Base.getindex(t::Tensor, inds...)
     @argcheck ndims(t) > 0 BoundsError(t)
-    checkbounds(t, inds...)
+    @boundscheck checkbounds(t, inds...)
     val = getindex(t.data, inds...)
     return Tensor(typeof(val) <: AbstractArray ? val : fill(val))
 end
 
-function Base.setindex!(t1::Tensor, t2::Tensor, inds...)
-    checkbounds(t1, inds...)
+@inline function Base.setindex!(t1::Tensor, t2::Tensor, inds...)
+    @boundscheck checkbounds(t1, inds...)
     val = ndims(t2) == 0 ? t2.data[1] : t2.data
     return setindex!(t1.data, val, inds...)
 end
 
-function Base.setindex!(t::Tensor, val::S, inds...) where {S<:Number}
-    checkbounds(t, inds...)
+@inline function Base.setindex!(t::Tensor, val::S, inds...) where {S<:Number}
+    @boundscheck checkbounds(t, inds...)
     return setindex!(t.data, val, inds...)
 end
 
