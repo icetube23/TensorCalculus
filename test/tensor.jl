@@ -23,33 +23,33 @@
 end
 
 @testset "Equality" begin
-    x = rand(2, 3, 3)
-    t1 = Tensor(x)
+    a1 = rand(2, 3, 3)
+    t1 = Tensor(a1)
 
     # t1 and t2 share their underlying data, thus t1 === t2
-    y = x
-    t2 = Tensor(y)
+    a2 = a1
+    t2 = Tensor(a2)
     @test t1 === t2
     @test t1 == t2
     @test t1 ≈ t2
 
     # t1 and t2 don't share their data, but contain the same values
-    y = copy(x)
-    t2 = Tensor(y)
+    a2 = copy(a1)
+    t2 = Tensor(a2)
     @test t1 !== t2
     @test t1 == t2
     @test t1 ≈ t2
 
     # t1 and t2 differ very slightly in one value
-    y[1, 2, 3] += 1e-10
-    t2 = Tensor(y)
+    a2[1, 2, 3] += 1e-10
+    t2 = Tensor(a2)
     @test t1 !== t2
     @test t1 != t2
     @test t1 ≈ t2
 
     # t1 and t2 differ in one value
-    y[1, 2, 3] = 4
-    t2 = Tensor(y)
+    a2[1, 2, 3] = 4
+    t2 = Tensor(a2)
     @test t1 !== t2
     @test t1 != t2
     @test !(t1 ≈ t2)
@@ -155,7 +155,7 @@ end
 @testset "Printing" begin
     # test that tensors show methods work upon array show methods
     io = IOBuffer()
-    # for compatibility with Julia 1.0 which used slightly different; remove if
+    # NOTE: for compatibility with Julia 1.0 which used slightly different; remove if
     # compatibility with this version is no longer needed/supported
     norm(s) = filter(x -> x != ' ', s)
 

@@ -124,7 +124,7 @@ function contract(t::Tensor{T}, i::Integer, j::Integer) where {T}
     a = permutedims(t.data, (i, j, Tuple(k for k in 1:ndims(t) if k != i && k != j)...))
 
     for n in eachindex(res)
-        @inbounds res[n] = sum(a[m,m,inds[n]] for m in axes(a, 1))
+        @inbounds res[n] = sum(a[m, m, inds[n]] for m in axes(a, 1))
     end
 
     return Tensor(res)
