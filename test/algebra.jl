@@ -47,18 +47,20 @@ end
 end
 
 @testset "Contraction" begin
-    t1 = Tensor([1 2; 3 4;;; 5 6; 7 8;;; 9 10; 11 12])
+    a1 = reshape(Vector(1:12), 2, 2, 3)
+    t1 = Tensor(a1)
     @test contract(t1, 1, 2) == Tensor([5, 13, 21])
     @test contract(t1, 1, 2) == contract(t1, 2, 1)
 
-    t2 = Tensor(rand(6, 3, 6, 2))
+    a2 = rand(6, 3, 6, 2)
+    t2 = Tensor(a2)
     t3 = contract(t2, 1, 3)
     @test size(t3) == (3, 2)
     @test t3 == Tensor(
         [
-            sum(t2.data[i, 1, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 1, i, 2] for i in axes(t2, 1))
-            sum(t2.data[i, 2, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 2, i, 2] for i in axes(t2, 1))
-            sum(t2.data[i, 3, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 3, i, 2] for i in axes(t2, 1))
+            sum(a2[i, 1, i, 1] for i in axes(a2, 1)) sum(a2[i, 1, i, 2] for i in axes(a2, 1))
+            sum(a2[i, 2, i, 1] for i in axes(a2, 1)) sum(a2[i, 2, i, 2] for i in axes(a2, 1))
+            sum(a2[i, 3, i, 1] for i in axes(a2, 1)) sum(a2[i, 3, i, 2] for i in axes(a2, 1))
         ],
     )
 
