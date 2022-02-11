@@ -2,18 +2,21 @@
     # the expected base methods for arrays also work on tensors
     t1 = Tensor(rand(3, 3))
     @test size(t1) == (3, 3)
+    @test size(t1, 1) == 3
     @test ndims(t1) == 2
     @test length(t1) == 9
     @test eltype(t1) === Float64
 
     t2 = Tensor(rand(Int32, 3, 3, 3))
     @test size(t2) == (3, 3, 3)
+    @test size(t2, 2) == 3
     @test ndims(t2) == 3
     @test length(t2) == 27
     @test eltype(t2) === Int32
 
     t3 = Tensor(3.0f0)
     @test size(t3) == ()
+    @test size(t3, 3) == 1
     @test ndims(t3) == 0
     @test length(t3) == 1
     @test eltype(t3) === Float32
