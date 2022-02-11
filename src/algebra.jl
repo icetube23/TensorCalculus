@@ -17,9 +17,11 @@ Arguments can be of arbitrary size and dimension.
 function ⊗(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     res = Array{promote_type(T, S)}(undef, size(t1)..., size(t2)...)
     inds1, inds2 = CartesianIndices(t1), CartesianIndices(t2)
+
     for i in eachindex(t1), j in eachindex(t2)
         @inbounds res[inds1[i], inds2[j]] = t1.data[i] * t2.data[j]
     end
+
     return Tensor(res)
 end
 
@@ -76,12 +78,79 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
 
         @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
     end
+
     return Tensor(res)
 end
+
+"""
+    contract(t::Tensor{T}, i::Integer, j::Integer) where {T} -> Tensor{T}
+
+Computes the contraction of the tensor `t` along the dimensions `i` and `j`.
+`i` and `j` need to be distinct, valid indices for the dimensions of `t`. Furthermore, the
+`i`-th dimension of `t` has to match its `j`-th dimension.
+
+# Arguments
+- `t::Tensor{T}`: the tensor to be contracted
+- `i::Integer`: first contraction dimension
+- `j::Integer`: second contraction dimension
+
+# Returns
+- `Tensor`: the contracted tensor
+
+# Throws
+- `ArgumentError`: if `i` and `j` are not distinct
+- `BoundsError`: if `i` and `j` do not index valid dimensions of `t`
+- `DimensionMismatch`: if the `i`-th dimension does not match the `j`-th dimension of `t`
+"""
+function contract(t::Tensor{T}, i::Integer, j::Integer) where {T}
+    @argcheck i != j
+    @argcheck 1 <= i <= ndims(t) BoundsError(size(t), i)
+    @argcheck 1 <= j <= ndims(t) BoundsError(size(t), j)
+    @argcheck size(t, i) == size(t, j) DimensionMismatch(
+        "i-th dimension is $(size(t, i)) but j-th dimension is $(size(t, j))"
+    )
+
+    i, j = (min(i, j), max(i, j))
+    st = size(t)
+    res = Array{T}(
+        undef,
+        st[firstindex(st):(i - 1)]...,
+        st[(i + 1):(j - 1)]...,
+        st[(j + 1):lastindex(st)]...,
+    )
+    inds = CartesianIndices(res)
+
+    # allow more efficient access of the needed (column-major) array elements
+    a = permutedims(t.data, (i, j, Tuple(k for k in 1:ndims(t) if k != i && k != j)...))
+
+    for n in eachindex(res)
+        @inbounds res[n] = sum(a[m,m,inds[n]] for m in axes(a, 1))
+    end
+
+    return Tensor(res)
+end
+
+"""
+    trace(t::Tensor{T,2}) where {T} -> Tensor{T,0}
+
+Computes the contraction of the tensor `t` along its two dimensions, equivalent to the trace
+of the underlying matrix of `t`.
+The two dimensions `t` need to match, i.e., `t` needs to be a 'square' tensor.
+
+# Arguments
+- `t::Tensor{T,2}`: the tensor to be contracted
+
+# Returns
+- `Tensor{T,0}`: the contracted scalar tensor
+
+# Throws
+- `DimensionMismatch`: if the first and the second dimension of `t` do not match
+"""
+trace(t::Tensor{T,2}) where {T} = contract(t, 1, 2)
 
 # TODO: Implement epsilon tensor
 # TODO: Implement delta tensor
 # TODO: Think about sparse tensors for efficiency?
 # TODO: Implement cross product (how?)
 # TODO: Implement (repeated) 'Überschiebung'
-# TODO: Implement contraction
+# TODO: Add examples to all relevant docstrings
