@@ -10,13 +10,13 @@ struct BroadcastTensor{T,N} <: AbstractArray{T,N}
 end
 
 # behaves like getindex(::Tensor, ...) but returns scalars instead of scalar tensors
-function Base.getindex(t::BroadcastTensor, args...; kwargs...)
-    val = getindex(t.data, args...; kwargs...)
+function Base.getindex(t::BroadcastTensor, inds...)
+    val = getindex(t.data, inds...)
     return typeof(val) <: AbstractArray ? Tensor(val) : val
 end
 
 # needed to allow broadcasting a BroadcastTensor
-Base.axes(t::BroadcastTensor, args...; kwargs...) = axes(t.data, args...; kwargs...)
+Base.axes(t::BroadcastTensor, inds...) = axes(t.data, inds...)
 
 # define the broadcasting behaviour of tensors using BroadcastTensor
 Base.broadcastable(t::Tensor) = BroadcastTensor(t)
