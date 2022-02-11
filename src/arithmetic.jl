@@ -59,19 +59,29 @@ Base.:/(t::Tensor, val::S) where {S<:Number} = Tensor(t.data / val)
 Base.:/(t1::Tensor, t2::Tensor{T,0}) where {T} = Tensor(t1.data / t2.data[1])
 
 # allow typical array operations like sum or maximum for tensors
-Base.sum(f, t::Tensor; kwargs...) = Tensor(sum(f, t.data; kwargs...))
+function Base.sum(f::Union{Function,Type}, t::Tensor; kwargs...)
+    return Tensor(sum(f, t.data; kwargs...))
+end
 Base.sum(t::Tensor; kwargs...) = sum(identity, t; kwargs...)
 
-Base.prod(f, t::Tensor; kwargs...) = Tensor(prod(f, t.data; kwargs...))
+function Base.prod(f::Union{Function,Type}, t::Tensor; kwargs...)
+    return Tensor(prod(f, t.data; kwargs...))
+end
 Base.prod(t::Tensor; kwargs...) = prod(identity, t; kwargs...)
 
-Base.maximum(f, t::Tensor; kwargs...) = Tensor(maximum(f, t.data; kwargs...))
+function Base.maximum(f::Union{Function,Type}, t::Tensor; kwargs...)
+    return Tensor(maximum(f, t.data; kwargs...))
+end
 Base.maximum(t::Tensor; kwargs...) = maximum(identity, t; kwargs...)
 
-Base.minimum(f, t::Tensor; kwargs...) = Tensor(minimum(f, t.data; kwargs...))
+function Base.minimum(f::Union{Function,Type}, t::Tensor; kwargs...)
+    return Tensor(minimum(f, t.data; kwargs...))
+end
 Base.minimum(t::Tensor; kwargs...) = minimum(identity, t; kwargs...)
 
-Base.extrema(f, t::Tensor; kwargs...) = (minimum(f, t; kwargs...), maximum(f, t; kwargs...))
+function Base.extrema(f::Union{Function,Type}, t::Tensor; kwargs...)
+    return (minimum(f, t; kwargs...), maximum(f, t; kwargs...))
+end
 Base.extrema(t::Tensor; kwargs...) = extrema(identity, t; kwargs...)
 
 Base.argmax(t::Tensor; kwargs...) = argmax(t.data; kwargs...)

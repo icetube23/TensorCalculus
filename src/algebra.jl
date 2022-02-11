@@ -78,3 +78,10 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     end
     return Tensor(res)
 end
+
+# TODO: Implement epsilon tensor
+# TODO: Implement delta tensor
+# TODO: Think about sparse tensors for efficiency?
+# TODO: Implement cross product (how?)
+# TODO: Implement (repeated) 'Überschiebung'
+# TODO: Implement contraction
