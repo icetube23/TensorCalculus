@@ -23,10 +23,9 @@
 end
 
 @testset "Inner product" begin
+    # for 1-dimensional tensors the inner product is equivalent to the vector dot product
     t1 = Tensor([1, 2, 3])
     t2 = Tensor([5, 2, -3])
-
-    # for 1-dimensional tensors the inner product is equivalent to the vector dot product
     @test t1 ⋅ t2 == Tensor(0)
 
     t3 = Tensor([
@@ -37,15 +36,43 @@ end
     @test t1 ⋅ t3 == Tensor([2, -2, 2])
     @test t2 ⋅ t3 == Tensor([0, 0, 0])
 
+    # for 2-dimensional tensors the inner product is equivalent to the matrix product
     t4 = Tensor(rand(3, 6))
     t5 = Tensor(rand(6, 5))
-
-    # for 2-dimensional tensors the inner product is equivalent to the matrix product
     @test t4 ⋅ t5 ≈ Tensor(t4.data * t5.data)
 
     # analogously for a matrix-vector product
     t6 = Tensor(rand(6))
     @test t4 ⋅ t6 ≈ Tensor(t4.data * t6.data)
+end
+
+@testset "Contraction" begin
+    t1 = Tensor([1 2; 3 4;;; 5 6; 7 8;;; 9 10; 11 12])
+    @test contract(t1, 1, 2) == Tensor([5, 13, 21])
+    @test contract(t1, 1, 2) == contract(t1, 2, 1)
+
+    t2 = Tensor(rand(6, 3, 6, 2))
+    t3 = contract(t2, 1, 3)
+    @test size(t3) == (3, 2)
+    @test t3 == Tensor(
+        [
+            sum(t2.data[i, 1, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 1, i, 2] for i in axes(t2, 1))
+            sum(t2.data[i, 2, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 2, i, 2] for i in axes(t2, 1))
+            sum(t2.data[i, 3, i, 1] for i in axes(t2, 1)) sum(t2.data[i, 3, i, 2] for i in axes(t2, 1))
+        ],
+    )
+
+    # contracting is only possible along distinct, valid dimensions of the same size
+    @test_throws ArgumentError contract(t1, 2, 2) # not distinct
+    @test_throws BoundsError contract(t1, 2, 4) # 4 not a valid dimension for rank 3 tensor
+    @test_throws DimensionMismatch contract(t1, 2, 3) # dimensions 2 and 3 are not equal
+
+    # for rank 2 tensors we can use the trace method instead of contract
+    @test trace(t1[:, :, 3]) == Tensor(21)
+    @test trace(t1[2, :, 1:2]) == Tensor(11)
+    @test_throws DimensionMismatch trace(t1[2, :, :])
+    @test trace(t2[:, 2, :, 1]) == contract(t2[:, 2, :, 1], 1, 2)
+    @test trace(t2[:, 2, :, 1]) == contract(t2[:, 2, :, 1], 2, 1)
 end
 
 # TODO: Test cross product (a.k.a. vector product)
