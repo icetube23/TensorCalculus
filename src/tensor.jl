@@ -53,8 +53,8 @@ Base.eltype(t::Tensor) = eltype(t.data)
 
 # extent array equality to tensors
 Base.:(==)(t1::Tensor, t2::Tensor) = t1.data == t2.data
-function Base.isapprox(t1::Tensor, t2::Tensor, args...; kwargs...)
-    return isapprox(t1.data, t2.data, args...; kwargs...)
+function Base.isapprox(t1::Tensor, t2::Tensor; kwargs...)
+    return isapprox(t1.data, t2.data; kwargs...)
 end
 
 # type conversions

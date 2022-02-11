@@ -180,3 +180,45 @@ end
     @test t1 .^ t2 == t1 .^ 2 == Tensor(t1.data .^ 2)
     @test t1 .% t2 == t1 .% 2 == Tensor(t1.data .% 2)
 end
+
+@testset "Array-like arithmetic" begin
+    t1 = Tensor([1 2; 3 4])
+
+    @test sum(t1) == Tensor(10)
+    @test sum(t1; dims=1) == Tensor([4 6])
+    @test sum(t1; dims=2) == Tensor(reshape([3, 7], 2, 1))
+
+    @test prod(t1) == Tensor(24)
+    @test prod(t1; dims=1) == Tensor([3 8])
+    @test prod(t1; dims=2) == Tensor(reshape([2, 12], 2, 1))
+
+    @test maximum(t1) == Tensor(4)
+    @test maximum(x -> -x, t1) == Tensor(-1)
+    @test maximum(t1; dims=1) == Tensor([3 4])
+
+    @test minimum(t1) == Tensor(1)
+    @test minimum(x -> -x, t1) == Tensor(-4)
+    @test minimum(t1; dims=2) == Tensor(reshape([1, 3], 2, 1))
+
+    # NOTE: when passing the 'dims' keyword to extrema, its behaviour is slightly different
+    # than with arrays, i.e., instead of a tensor of tuples, it returns a tuple of tensors
+    @test extrema(t1) == (Tensor(1), Tensor(4))
+    @test extrema(x -> -x, t1) == (Tensor(-4), Tensor(-1))
+    @test extrema(t1; dims=1) == (Tensor([1 2]), Tensor([3 4]))
+
+    # NOTE: similar to extrema, this functions does not return a tensor of cartesian indices
+    # when assign the 'dims' keyword but rather an 'Array{CartesianIndices}'
+    @test argmax(t1) == CartesianIndex(2, 2)
+    @test argmax(t1; dims=1) == [CartesianIndex(2, 1) CartesianIndex(2, 2)]
+    @test argmin(t1) == CartesianIndex(1, 1)
+    @test argmin(t1; dims=2) == reshape([CartesianIndex(1, 1), CartesianIndex(2, 1)], 2, 1)
+
+    @test findmax(t1) == (Tensor(4), CartesianIndex(2, 2))
+    @test findmax(t1; dims=1) ==
+        (Tensor([3 4]), [CartesianIndex(2, 1) CartesianIndex(2, 2)])
+    @test findmin(t1) == (Tensor(1), CartesianIndex(1, 1))
+    @test findmin(t1; dims=2) == (
+        Tensor(reshape([1, 3], 2, 1)),
+        reshape([CartesianIndex(1, 1), CartesianIndex(2, 1)], 2, 1),
+    )
+end
