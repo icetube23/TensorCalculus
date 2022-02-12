@@ -71,7 +71,7 @@ end
 
     # for rank 2 tensors we can use the trace method instead of contract
     @test trace(t1[:, :, 3]) == Tensor(21)
-    @test trace(t1[2, :, 1:2]) == Tensor(11)
+    @test trace(t1[2, :, 1:2]) == Tensor(10)
     @test_throws DimensionMismatch trace(t1[2, :, :])
     @test trace(t2[:, 2, :, 1]) == contract(t2[:, 2, :, 1], 1, 2)
     @test trace(t2[:, 2, :, 1]) == contract(t2[:, 2, :, 1], 2, 1)
