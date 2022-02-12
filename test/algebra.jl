@@ -77,4 +77,87 @@ end
     @test trace(t2[:, 2, :, 1]) == contract(t2[:, 2, :, 1], 2, 1)
 end
 
+@testset "Überschiebung" begin
+    t1 = Tensor(reshape(Vector(1:12), 2, 3, 2))
+    t2 = Tensor([
+        1.1 2.2 3.3
+        -3.3 -2.2 -1.1
+    ])
+
+    t3 = pushover(t1, t2, 2, 2)
+    @test size(t3) == (2, 2, 2)
+    @test t3 ≈ Tensor(reshape([24.2, 30.8, 63.8, 70.4, -15.4, -22, -55, -61.6], 2, 2, 2))
+
+    t4 = pushover(t1, t2, 1, 1)
+    @test size(t4) == (3, 2, 3)
+    @test t4 ≈ Tensor(
+        reshape(
+            [
+                -5.5,
+                -9.9,
+                -14.3,
+                -18.7,
+                -23.1,
+                -27.5,
+                -2.2,
+                -2.2,
+                -2.2,
+                -2.2,
+                -2.2,
+                -2.2,
+                1.1,
+                5.5,
+                9.9,
+                14.3,
+                18.7,
+                23.1,
+            ],
+            3,
+            2,
+            3,
+        ),
+    )
+
+    t5 = pushover(t1, t2, 3, 1)
+    @test size(t5) == (2, 3, 3)
+    @test t5 ≈ Tensor(
+        reshape(
+            [
+                -22,
+                -24.2,
+                -26.4,
+                -28.6,
+                -30.8,
+                -33,
+                -13.2,
+                -13.2,
+                -13.2,
+                -13.2,
+                -13.2,
+                -13.2,
+                -4.4,
+                -2.2,
+                0,
+                2.2,
+                4.4,
+                6.6,
+            ],
+            2,
+            3,
+            3,
+        ),
+    )
+
+    # push-over is only possible along valid dimensions of the same size
+    @test_throws BoundsError pushover(t1, t2, 3, 3)
+    @test_throws DimensionMismatch pushover(t1, t2, 1, 2)
+
+    # push-over satifies many interesting tensor-algebraic identities
+    t6 = Tensor(rand(4, 7, 5))
+    t7 = Tensor(rand(6, 3, 4))
+    @test pushover(t6, t7, 1, 3) == permutedims(pushover(t7, t6, 3, 1), (3, 4, 1, 2))
+    @test pushover(t6, t7, 1, 3) == contract(t6 ⊗ t7, 1, 6)
+    @test pushover(t6, t7, 1, 3) == permutedims(t6, (2, 3, 1)) ⋅ permutedims(t7, (3, 1, 2))
+end
+
 # TODO: Test cross product (a.k.a. vector product)

@@ -1,6 +1,6 @@
 module TensorCalculus
 
-export Tensor, ⊗, ⋅, contract, trace
+export Tensor, ⊗, ⋅, contract, trace, pushover
 
 include("tensor.jl")
 include("broadcast.jl")

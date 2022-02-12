@@ -18,6 +18,7 @@ function ⊗(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     res = Array{promote_type(T, S)}(undef, size(t1)..., size(t2)...)
     inds1, inds2 = CartesianIndices(t1), CartesianIndices(t2)
 
+    # FIXME: way to many allocs here, probably bad index usage
     for i in eachindex(t1), j in eachindex(t2)
         @inbounds res[inds1[i], inds2[j]] = t1.data[i] * t2.data[j]
     end
@@ -60,6 +61,7 @@ first dimension of `t2`.
     match the first dimension of `t2`
 """
 function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
+    # TODO: benchmark inner product against pushover
     @argcheck ndims(t1) > 0
     @argcheck ndims(t2) > 0
     @argcheck last(size(t1)) == first(size(t2))
@@ -71,6 +73,7 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     a1 = permutedims(conj(t1.data), (ndims(t1), 1:(ndims(t1) - 1)...))
     a2 = t2.data
 
+    # FIXME: too many allocs, probably inefficient indexing
     for i in eachindex(res)
         # map indices of result array to appropriate indices for the factor arrays
         ind = Tuple(inds[i])
@@ -83,48 +86,49 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
 end
 
 """
-    contract(t::Tensor, i::Integer, j::Integer) -> Tensor
+    contract(t::Tensor, d1::Integer, d2::Integer) -> Tensor
 
-Computes the contraction of the tensor `t` along the dimensions `i` and `j`.
-`i` and `j` need to be distinct, valid indices for the dimensions of `t`. Furthermore, the
-`i`-th dimension of `t` has to match its `j`-th dimension.
+Computes the contraction of the tensor `t` along the dimensions `d1` and `d2`.
+`d1` and `d2` need to be distinct, valid indices for the dimensions of `t`. Additionally,
+the `d1`-th dimension of `t` has to match its `d2`-th dimension.
 
 # Arguments
 - `t::Tensor`: the tensor to be contracted
-- `i::Integer`: first contraction dimension
-- `j::Integer`: second contraction dimension
+- `d1::Integer`: the first contraction dimension
+- `d2::Integer`: the second contraction dimension
 
 # Returns
 - `Tensor`: the contracted tensor
 
 # Throws
-- `ArgumentError`: if `i` and `j` are not distinct
-- `BoundsError`: if `i` and `j` do not index valid dimensions of `t`
-- `DimensionMismatch`: if the `i`-th dimension does not match the `j`-th dimension of `t`
+- `ArgumentError`: if `d1` and `d2` are not distinct
+- `BoundsError`: if `d1` and `d2` do not index valid dimensions of `t`
+- `DimensionMismatch`: if the `d1`-th dimension does not match the `d2`-th dimension of `t`
 """
-function contract(t::Tensor, i::Integer, j::Integer)
-    @argcheck i != j
-    @argcheck 1 <= i <= ndims(t) BoundsError(size(t), i)
-    @argcheck 1 <= j <= ndims(t) BoundsError(size(t), j)
-    @argcheck size(t, i) == size(t, j) DimensionMismatch(
-        "i-th dimension is $(size(t, i)) but j-th dimension is $(size(t, j))"
+function contract(t::Tensor, d1::Integer, d2::Integer)
+    @argcheck d1 != d2
+    @argcheck 1 <= d1 <= ndims(t) BoundsError(size(t), d1)
+    @argcheck 1 <= d2 <= ndims(t) BoundsError(size(t), d2)
+    @argcheck size(t, d1) == size(t, d2) DimensionMismatch(
+        "$d1-th dimension of t is $(size(t, d1)) but $d2-th dimension is $(size(t, d2))"
     )
 
-    i, j = (min(i, j), max(i, j))
+    d1, d2 = (min(d1, d2), max(d1, d2))
     st = size(t)
     res = Array{eltype(t)}(
         undef,
-        st[firstindex(st):(i - 1)]...,
-        st[(i + 1):(j - 1)]...,
-        st[(j + 1):lastindex(st)]...,
+        st[firstindex(st):(d1 - 1)]...,
+        st[(d1 + 1):(d2 - 1)]...,
+        st[(d2 + 1):lastindex(st)]...,
     )
     inds = CartesianIndices(res)
 
     # allow more efficient access of the needed (column-major) array elements
-    a = permutedims(t.data, (i, j, Tuple(k for k in 1:ndims(t) if k != i && k != j)...))
+    a = permutedims(t.data, (d1, d2, Tuple(k for k in 1:ndims(t) if k != d1 && k != d2)...))
 
-    for n in eachindex(res)
-        @inbounds res[n] = sum(a[m, m, inds[n]] for m in axes(a, 1))
+    # FIXME: allocs are not too bad here, but probably can still remove most of them
+    for i in eachindex(res)
+        @inbounds res[i] = sum(a[j, j, inds[i]] for j in axes(a, 1))
     end
 
     return Tensor(res)
@@ -148,9 +152,66 @@ The two dimensions `t` need to match, i.e., `t` needs to be a 'square' tensor.
 """
 trace(t::Tensor{T,2}) where {T} = contract(t, 1, 2)
 
+"""
+    pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where {T,S} -> Tensor{promote_type(T, S)}
+
+Computes the 'Überschiebung' of the tensors `t1` and `t2` along the dimensions `d1` and `d2`
+respectively.
+`d1` and `d2` need to be valid indices for the dimensions of `t1` and `t2` respectively.
+Additionally, the `d1`-th dimension of `t1` has to match the `d2`-th dimension of `t2`.
+
+# Arguments
+- `t1::Tensor{T}`: the first tensor to push over
+- `t2::Tensor{S}`: the second tensor to push over
+- `d1::Integer`: the first push-over dimension
+- `d2::Integer`: the second push-over dimension
+
+# Returns
+- `Tensor{promote_type(T, S)}`: the push-over tensor
+
+# Throws
+- `BoundsError`: if `d1` and `d2` do not index valid dimensions of `t1` and `t2`
+    respectively
+- `DimensionMismatch`: if the `d1`-th dimension of `t1` does not match the `d2`-th dimension
+    of `t2`
+"""
+function pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where {T,S}
+    # TODO: benchmark pushover against permutedims + inner product
+    @argcheck 1 <= d1 <= ndims(t1) BoundsError(size(t1), d1)
+    @argcheck 1 <= d2 <= ndims(t2) BoundsError(size(t2), d2)
+    @argcheck size(t1, d1) == size(t2, d2) DimensionMismatch(
+        "$d1-th dimension of t1 is $(size(t1, d1)) but $d2-th dimension of t2 is $(size(t2, d2))",
+    )
+
+    st1 = size(t1)
+    st2 = size(t2)
+    res = Array{promote_type(T, S)}(
+        undef,
+        st1[firstindex(st1):(d1 - 1)]...,
+        st1[(d1 + 1):lastindex(st1)]...,
+        st2[firstindex(st2):(d2 - 1)]...,
+        st2[(d2 + 1):lastindex(st2)]...,
+    )
+    inds = CartesianIndices(res)
+
+    # allow more efficient access of the needed (column-major) array elements
+    a1 = permutedims(t1.data, (d1, Tuple(k for k in 1:ndims(t1) if k != d1)...))
+    a2 = permutedims(t2.data, (d2, Tuple(k for k in 1:ndims(t2) if k != d2)...))
+
+    # FIXME: also way too many allocs, improve indexing
+    for i in eachindex(res)
+        ind = Tuple(inds[i])
+        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
+
+        @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
+    end
+
+    return Tensor(res)
+end
+
 # TODO: Implement epsilon tensor
 # TODO: Implement delta tensor
 # TODO: Think about sparse tensors for efficiency?
 # TODO: Implement cross product (how?)
-# TODO: Implement (repeated) 'Überschiebung'
 # TODO: Add examples to all relevant docstrings
+# TODO: Maybe rename actual implementations of ⊗ and ⋅ to outer and inner and alias symbols
