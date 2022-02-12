@@ -68,7 +68,7 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     inds = CartesianIndices(res)
 
     # allow more efficient access of the needed (column-major) array elements
-    a1 = permutedims(t1.data, (ndims(t1), 1:(ndims(t1) - 1)...))
+    a1 = permutedims(conj(t1.data), (ndims(t1), 1:(ndims(t1) - 1)...))
     a2 = t2.data
 
     for i in eachindex(res)
@@ -83,14 +83,14 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
 end
 
 """
-    contract(t::Tensor{T}, i::Integer, j::Integer) where {T} -> Tensor{T}
+    contract(t::Tensor, i::Integer, j::Integer) -> Tensor
 
 Computes the contraction of the tensor `t` along the dimensions `i` and `j`.
 `i` and `j` need to be distinct, valid indices for the dimensions of `t`. Furthermore, the
 `i`-th dimension of `t` has to match its `j`-th dimension.
 
 # Arguments
-- `t::Tensor{T}`: the tensor to be contracted
+- `t::Tensor`: the tensor to be contracted
 - `i::Integer`: first contraction dimension
 - `j::Integer`: second contraction dimension
 
@@ -102,7 +102,7 @@ Computes the contraction of the tensor `t` along the dimensions `i` and `j`.
 - `BoundsError`: if `i` and `j` do not index valid dimensions of `t`
 - `DimensionMismatch`: if the `i`-th dimension does not match the `j`-th dimension of `t`
 """
-function contract(t::Tensor{T}, i::Integer, j::Integer) where {T}
+function contract(t::Tensor, i::Integer, j::Integer)
     @argcheck i != j
     @argcheck 1 <= i <= ndims(t) BoundsError(size(t), i)
     @argcheck 1 <= j <= ndims(t) BoundsError(size(t), j)
@@ -112,7 +112,7 @@ function contract(t::Tensor{T}, i::Integer, j::Integer) where {T}
 
     i, j = (min(i, j), max(i, j))
     st = size(t)
-    res = Array{T}(
+    res = Array{eltype(t)}(
         undef,
         st[firstindex(st):(i - 1)]...,
         st[(i + 1):(j - 1)]...,
