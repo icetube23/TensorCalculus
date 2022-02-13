@@ -57,14 +57,15 @@ first dimension of `t2`.
 - `Tensor{promote_type(T, S)}`: the inner product of `t1` and `t2`
 
 # Throws
-- `ArgumentError`: if either factor is 0-dimensional or the last dimension of `t1` does not
-    match the first dimension of `t2`
+- `ArgumentError`: if either `t1` or `t2` is 0-dimensional
+- `DimensionMismatch`: if the last dimension of `t1` does not match the first dimension of
+    `t2`
 """
 function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     # TODO: benchmark inner product against pushover
     @argcheck ndims(t1) > 0
     @argcheck ndims(t2) > 0
-    @argcheck last(size(t1)) == first(size(t2))
+    @argcheck last(size(t1)) == first(size(t2)) DimensionMismatch
 
     res = Array{promote_type(T, S)}(undef, front(size(t1))..., tail(size(t2))...)
     inds = CartesianIndices(res)
@@ -109,9 +110,7 @@ function contract(t::Tensor, d1::Integer, d2::Integer)
     @argcheck d1 != d2
     @argcheck 1 <= d1 <= ndims(t) BoundsError(size(t), d1)
     @argcheck 1 <= d2 <= ndims(t) BoundsError(size(t), d2)
-    @argcheck size(t, d1) == size(t, d2) DimensionMismatch(
-        "$d1-th dimension of t is $(size(t, d1)) but $d2-th dimension is $(size(t, d2))"
-    )
+    @argcheck size(t, d1) == size(t, d2) DimensionMismatch
 
     d1, d2 = (min(d1, d2), max(d1, d2))
     st = size(t)
@@ -179,9 +178,7 @@ function pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where 
     # TODO: benchmark pushover against permutedims + inner product
     @argcheck 1 <= d1 <= ndims(t1) BoundsError(size(t1), d1)
     @argcheck 1 <= d2 <= ndims(t2) BoundsError(size(t2), d2)
-    @argcheck size(t1, d1) == size(t2, d2) DimensionMismatch(
-        "$d1-th dimension of t1 is $(size(t1, d1)) but $d2-th dimension of t2 is $(size(t2, d2))",
-    )
+    @argcheck size(t1, d1) == size(t2, d2) DimensionMismatch
 
     st1 = size(t1)
     st2 = size(t2)

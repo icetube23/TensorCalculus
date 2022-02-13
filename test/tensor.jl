@@ -232,3 +232,43 @@ end
     d = Dict(t => (3, 3))
     @test d[t] == (3, 3)
 end
+
+@testset "Delta" begin
+    # the delta tensor is a square boolean tensor of dimension 2
+    d3 = δ(3)
+    @test size(d3) == (3, 3)
+    @test eltype(d3) === Bool
+
+    # the delta tensor acts like the neutral element of the inner product
+    t = Tensor(rand(3, 4, 5))
+    @test t ⋅ δ(5) == δ(3) ⋅ t == t
+    @test δ(4) ⋅ δ(4) == δ(4)
+
+    # delta tensor can also be created using a value type
+    @test δ(Val(4)) == δ(4)
+end
+
+@testset "Epsilon" begin
+    # the nth epsilon tensor is an n×...×n Int8 tensor of dimension n
+    eps3 = ϵ(3)
+    @test size(eps3) == (3, 3, 3)
+    @test eltype(eps3) === Int8
+
+    # the epsilon tensor can be used to generalize the cross product to tensors
+    t1 = Tensor([1, 0, 0])
+    t2 = Tensor([0, 1, 0])
+    # TODO: adjust cross product definition if actual implementation changes
+    @test -(t1 ⋅ ϵ(3) ⋅ t2) == Tensor([0, 0, 1]) # = t1 × t2
+
+    # it also generalizes the tensors of higher dimensions than 1
+    t3 = Tensor([1 0 0;
+                 2 0 0])
+    @test -(t3 ⋅ ϵ(3) ⋅ t2) == Tensor([0 0 1;
+                                      0 0 2])
+
+    # it can also work on dimensions different than 3 with a little creativity
+    t4 = Tensor([1, 0, 0, 0])
+    t5 = Tensor([0, 1, 0, 0])
+    t6 = Tensor([0, 0, 1, 0])
+    @test ϵ(4) ⋅ t4 ⋅ t5 ⋅ t6 == Tensor([0, 0, 0, 1])
+end

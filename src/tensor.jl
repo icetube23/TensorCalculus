@@ -1,3 +1,4 @@
+using Combinatorics
 using ArgCheck
 
 """
@@ -125,3 +126,22 @@ end
 
 # tensor hash should be slightly different than the hash of the underlying data
 Base.hash(t::Tensor) = hash(hash(t.data) + hash("t"))
+
+# TODO: probably relocate these definitions to another (new?) file
+function δ(::Val{N}) where {N}
+    id = zeros(Bool, N, N)
+    for i in axes(id, 1)
+        @inbounds id[i, i] = true
+    end
+    return Tensor(id)
+end
+δ(N::Integer) = δ(Val(N))
+
+function ϵ(::Val{N}) where {N}
+    lc = zeros(Int8, ntuple(d -> N, Val(N)))
+    for perm in permutations(1:N)
+        @inbounds lc[perm...] = levicivita(perm)
+    end
+    return Tensor(lc)
+end
+ϵ(N::Integer) = ϵ(Val(N))
