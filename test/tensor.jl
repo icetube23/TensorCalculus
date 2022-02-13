@@ -261,10 +261,14 @@ end
     @test -(t1 ⋅ ϵ(3) ⋅ t2) == Tensor([0, 0, 1]) # = t1 × t2
 
     # it also generalizes the tensors of higher dimensions than 1
-    t3 = Tensor([1 0 0;
-                 2 0 0])
-    @test -(t3 ⋅ ϵ(3) ⋅ t2) == Tensor([0 0 1;
-                                      0 0 2])
+    t3 = Tensor([
+        1 0 0
+        2 0 0
+    ])
+    @test -(t3 ⋅ ϵ(3) ⋅ t2) == Tensor([
+        0 0 1
+        0 0 2
+    ])
 
     # it can also work on dimensions different than 3 with a little creativity
     t4 = Tensor([1, 0, 0, 0])
