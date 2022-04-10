@@ -63,29 +63,13 @@ first dimension of `t2`.
     `t2`
 """
 function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
-    # TODO: benchmark inner product against pushover
     @argcheck ndims(t1) > 0
     @argcheck ndims(t2) > 0
     @argcheck last(size(t1)) == first(size(t2)) DimensionMismatch
 
-    res = Array{promote_type(T, S)}(undef, front(size(t1))..., tail(size(t2))...)
-    inds = CartesianIndices(res)
-
-    # allow more efficient access of the needed (column-major) array elements
-    a1 = permutedims(conj(t1.data), (ndims(t1), 1:(ndims(t1) - 1)...))
-    a2 = t2.data
-
-    # FIXME: too many allocs, probably inefficient indexing
-    for i in eachindex(res)
-        # map indices of result array to appropriate indices for the factor arrays
-        ind = Tuple(inds[i])
-        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
-
-        @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
-    end
-
-    return Tensor(res)
+    return pushover(conj(t1), t2, ndims(t1), 1)
 end
+
 
 """
     contract(t::Tensor, d1::Integer, d2::Integer) -> Tensor

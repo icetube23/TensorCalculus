@@ -89,3 +89,5 @@ Base.argmin(t::Tensor; kwargs...) = argmin(t.data; kwargs...)
 
 Base.findmax(t::Tensor; kwargs...) = (maximum(t; kwargs...), argmax(t; kwargs...))
 Base.findmin(t::Tensor; kwargs...) = (minimum(t; kwargs...), argmin(t; kwargs...))
+
+Base.conj(t::Tensor) = Tensor(conj(t.data))
