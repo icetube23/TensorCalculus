@@ -20,8 +20,8 @@ function ⊗(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     j, k = 1, 1
     for i in eachindex(res)
         @inbounds res[i] = t1.data[j] * t2.data[k]
-        k += j == length(t1) ? 1 : 0
         j = j % length(t1) + 1
+        k += j == 1 ? 1 : 0
     end
 
     return Tensor(res)
@@ -176,32 +176,26 @@ Additionally, the `d1`-th dimension of `t1` has to match the `d2`-th dimension o
     of `t2`
 """
 function pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where {T,S}
-    # TODO: benchmark pushover against permutedims + inner product
     @argcheck 1 <= d1 <= ndims(t1) BoundsError(size(t1), d1)
     @argcheck 1 <= d2 <= ndims(t2) BoundsError(size(t2), d2)
     @argcheck size(t1, d1) == size(t2, d2) DimensionMismatch
-
-    st1 = size(t1)
-    st2 = size(t2)
-    res = Array{promote_type(T, S)}(
-        undef,
-        st1[firstindex(st1):(d1 - 1)]...,
-        st1[(d1 + 1):lastindex(st1)]...,
-        st2[firstindex(st2):(d2 - 1)]...,
-        st2[(d2 + 1):lastindex(st2)]...,
-    )
-    inds = CartesianIndices(res)
 
     # allow more efficient access of the needed (column-major) array elements
     a1 = permutedims(t1.data, (d1, Tuple(k for k in 1:ndims(t1) if k != d1)...))
     a2 = permutedims(t2.data, (d2, Tuple(k for k in 1:ndims(t2) if k != d2)...))
 
-    # FIXME: also way too many allocs, improve indexing
-    for i in eachindex(res)
-        ind = Tuple(inds[i])
-        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
+    res = Array{promote_type(T, S)}(
+        undef,
+        size(a1)[2:ndims(a1)]...,
+        size(a2)[2:ndims(a2)]...,
+    )
 
-        @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
+    # NOTE: improved indexing, but still not great, more optimization?
+    j, k = 1, 1
+    for i in eachindex(res)
+        @inbounds res[i] = sum(a1[j:j+size(a1, 1)-1] .* a2[k:k+size(a1, 1)-1])
+        j = (j + size(a1, 1)) % length(t1)
+        k += j == 1 ? size(a1, 1) : 0
     end
 
     return Tensor(res)
