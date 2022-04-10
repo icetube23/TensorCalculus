@@ -16,11 +16,12 @@ Arguments can be of arbitrary size and dimension.
 """
 function ⊗(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     res = Array{promote_type(T, S)}(undef, size(t1)..., size(t2)...)
-    inds1, inds2 = CartesianIndices(t1), CartesianIndices(t2)
 
-    # FIXME: way to many allocs here, probably bad index usage
-    for i in eachindex(t1), j in eachindex(t2)
-        @inbounds res[inds1[i], inds2[j]] = t1.data[i] * t2.data[j]
+    j, k = 1, 1
+    for i in eachindex(res)
+        @inbounds res[i] = t1.data[j] * t2.data[k]
+        k += j == length(t1) ? 1 : 0
+        j = j % length(t1) + 1
     end
 
     return Tensor(res)
