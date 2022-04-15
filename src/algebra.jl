@@ -70,7 +70,6 @@ function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     return pushover(conj(t1), t2, ndims(t1), 1)
 end
 
-
 """
     contract(t::Tensor, d1::Integer, d2::Integer) -> Tensor
 
@@ -97,20 +96,13 @@ function contract(t::Tensor, d1::Integer, d2::Integer)
     @argcheck 1 <= d2 <= ndims(t) BoundsError(size(t), d2)
     @argcheck size(t, d1) == size(t, d2) DimensionMismatch
 
-    d1, d2 = (min(d1, d2), max(d1, d2))
-    st = size(t)
-    res = Array{eltype(t)}(
-        undef,
-        st[firstindex(st):(d1 - 1)]...,
-        st[(d1 + 1):(d2 - 1)]...,
-        st[(d2 + 1):lastindex(st)]...,
-    )
-    inds = CartesianIndices(res)
-
     # allow more efficient access of the needed (column-major) array elements
     a = permutedims(t.data, (d1, d2, Tuple(k for k in 1:ndims(t) if k != d1 && k != d2)...))
 
-    # FIXME: allocs are not too bad here, but probably can still remove most of them
+    res = Array{eltype(t)}(undef, size(a)[3:ndims(a)])
+    inds = CartesianIndices(res)
+
+    # NOTE: replacing the cartesian indexing by on the fly linear indexing hurts performance
     for i in eachindex(res)
         @inbounds res[i] = sum(a[j, j, inds[i]] for j in axes(a, 1))
     end
@@ -169,15 +161,13 @@ function pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where 
     a2 = permutedims(t2.data, (d2, Tuple(k for k in 1:ndims(t2) if k != d2)...))
 
     res = Array{promote_type(T, S)}(
-        undef,
-        size(a1)[2:ndims(a1)]...,
-        size(a2)[2:ndims(a2)]...,
+        undef, size(a1)[2:ndims(a1)]..., size(a2)[2:ndims(a2)]...
     )
 
     # NOTE: improved indexing, but still not great, more optimization?
     j, k = 1, 1
     for i in eachindex(res)
-        @inbounds res[i] = sum(a1[j:j+size(a1, 1)-1] .* a2[k:k+size(a1, 1)-1])
+        @inbounds res[i] = sum(a1[j:(j + size(a1, 1) - 1)] .* a2[k:(k + size(a1, 1) - 1)])
         j = (j + size(a1, 1)) % length(t1)
         k += j == 1 ? size(a1, 1) : 0
     end
