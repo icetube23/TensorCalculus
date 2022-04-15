@@ -102,7 +102,7 @@ function contract(t::Tensor, d1::Integer, d2::Integer)
     res = Array{eltype(t)}(undef, size(a)[3:ndims(a)])
     inds = CartesianIndices(res)
 
-    # NOTE: replacing the cartesian indexing by on the fly linear indexing hurts performance
+    # NOTE: replacing the cartesian indexing by on-the-fly linear indexing hurts performance
     for i in eachindex(res)
         @inbounds res[i] = sum(a[j, j, inds[i]] for j in axes(a, 1))
     end
