@@ -16,11 +16,12 @@ Arguments can be of arbitrary size and dimension.
 """
 function ⊗(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
     res = Array{promote_type(T, S)}(undef, size(t1)..., size(t2)...)
-    inds1, inds2 = CartesianIndices(t1), CartesianIndices(t2)
 
-    # FIXME: way to many allocs here, probably bad index usage
-    for i in eachindex(t1), j in eachindex(t2)
-        @inbounds res[inds1[i], inds2[j]] = t1.data[i] * t2.data[j]
+    j, k = 1, 1
+    for i in eachindex(res)
+        @inbounds res[i] = t1.data[j] * t2.data[k]
+        j = j % length(t1) + 1
+        k += j == 1 ? 1 : 0
     end
 
     return Tensor(res)
@@ -62,28 +63,11 @@ first dimension of `t2`.
     `t2`
 """
 function ⋅(t1::Tensor{T}, t2::Tensor{S}) where {T,S}
-    # TODO: benchmark inner product against pushover
     @argcheck ndims(t1) > 0
     @argcheck ndims(t2) > 0
     @argcheck last(size(t1)) == first(size(t2)) DimensionMismatch
 
-    res = Array{promote_type(T, S)}(undef, front(size(t1))..., tail(size(t2))...)
-    inds = CartesianIndices(res)
-
-    # allow more efficient access of the needed (column-major) array elements
-    a1 = permutedims(conj(t1.data), (ndims(t1), 1:(ndims(t1) - 1)...))
-    a2 = t2.data
-
-    # FIXME: too many allocs, probably inefficient indexing
-    for i in eachindex(res)
-        # map indices of result array to appropriate indices for the factor arrays
-        ind = Tuple(inds[i])
-        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
-
-        @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
-    end
-
-    return Tensor(res)
+    return pushover(conj(t1), t2, ndims(t1), 1)
 end
 
 """
@@ -112,20 +96,13 @@ function contract(t::Tensor, d1::Integer, d2::Integer)
     @argcheck 1 <= d2 <= ndims(t) BoundsError(size(t), d2)
     @argcheck size(t, d1) == size(t, d2) DimensionMismatch
 
-    d1, d2 = (min(d1, d2), max(d1, d2))
-    st = size(t)
-    res = Array{eltype(t)}(
-        undef,
-        st[firstindex(st):(d1 - 1)]...,
-        st[(d1 + 1):(d2 - 1)]...,
-        st[(d2 + 1):lastindex(st)]...,
-    )
-    inds = CartesianIndices(res)
-
     # allow more efficient access of the needed (column-major) array elements
     a = permutedims(t.data, (d1, d2, Tuple(k for k in 1:ndims(t) if k != d1 && k != d2)...))
 
-    # FIXME: allocs are not too bad here, but probably can still remove most of them
+    res = Array{eltype(t)}(undef, size(a)[3:ndims(a)])
+    inds = CartesianIndices(res)
+
+    # NOTE: replacing the cartesian indexing by on-the-fly linear indexing hurts performance
     for i in eachindex(res)
         @inbounds res[i] = sum(a[j, j, inds[i]] for j in axes(a, 1))
     end
@@ -175,32 +152,24 @@ Additionally, the `d1`-th dimension of `t1` has to match the `d2`-th dimension o
     of `t2`
 """
 function pushover(t1::Tensor{T}, t2::Tensor{S}, d1::Integer, d2::Integer) where {T,S}
-    # TODO: benchmark pushover against permutedims + inner product
     @argcheck 1 <= d1 <= ndims(t1) BoundsError(size(t1), d1)
     @argcheck 1 <= d2 <= ndims(t2) BoundsError(size(t2), d2)
     @argcheck size(t1, d1) == size(t2, d2) DimensionMismatch
-
-    st1 = size(t1)
-    st2 = size(t2)
-    res = Array{promote_type(T, S)}(
-        undef,
-        st1[firstindex(st1):(d1 - 1)]...,
-        st1[(d1 + 1):lastindex(st1)]...,
-        st2[firstindex(st2):(d2 - 1)]...,
-        st2[(d2 + 1):lastindex(st2)]...,
-    )
-    inds = CartesianIndices(res)
 
     # allow more efficient access of the needed (column-major) array elements
     a1 = permutedims(t1.data, (d1, Tuple(k for k in 1:ndims(t1) if k != d1)...))
     a2 = permutedims(t2.data, (d2, Tuple(k for k in 1:ndims(t2) if k != d2)...))
 
-    # FIXME: also way too many allocs, improve indexing
-    for i in eachindex(res)
-        ind = Tuple(inds[i])
-        i1, i2 = ind[firstindex(ind):(ndims(t1) - 1)], ind[ndims(t1):lastindex(ind)]
+    res = Array{promote_type(T, S)}(
+        undef, size(a1)[2:ndims(a1)]..., size(a2)[2:ndims(a2)]...
+    )
 
-        @inbounds res[i] = sum(a1[j, i1...] * a2[j, i2...] for j in axes(a1, 1))
+    # NOTE: improved indexing, but still not great, more optimization?
+    j, k = 1, 1
+    for i in eachindex(res)
+        @inbounds res[i] = sum(a1[j:(j + size(a1, 1) - 1)] .* a2[k:(k + size(a1, 1) - 1)])
+        j = (j + size(a1, 1)) % length(t1)
+        k += j == 1 ? size(a1, 1) : 0
     end
 
     return Tensor(res)

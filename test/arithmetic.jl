@@ -207,7 +207,7 @@ end
     @test extrema(t1; dims=1) == (Tensor([1 2]), Tensor([3 4]))
 
     # NOTE: similar to extrema, this functions does not return a tensor of cartesian indices
-    # when assign the 'dims' keyword but rather an 'Array{CartesianIndices}'
+    # when assigning the 'dims' keyword but rather an 'Array{CartesianIndices}'
     @test argmax(t1) == CartesianIndex(2, 2)
     @test argmax(t1; dims=1) == [CartesianIndex(2, 1) CartesianIndex(2, 2)]
     @test argmin(t1) == CartesianIndex(1, 1)
@@ -221,4 +221,9 @@ end
         Tensor(reshape([1, 3], 2, 1)),
         reshape([CartesianIndex(1, 1), CartesianIndex(2, 1)], 2, 1),
     )
+
+    t2 = Tensor([1-im 3; -2im 2+3im])
+    @test conj(t2) == Tensor([1+im 3; 2im 2-3im])
+    t3 = Tensor(rand(4, 7, 5))
+    @test conj(t3) == t3
 end
